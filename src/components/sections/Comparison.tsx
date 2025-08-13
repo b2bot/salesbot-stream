@@ -27,15 +27,15 @@ const Comparison = () => {
     <section className="py-16">
       <div className="container mx-auto">
         <div className="grid md:grid-cols-2 gap-6">
-          <div className="rounded-xl border bg-card p-6">
+          <div className="rounded-xl border bg-card/50 p-6 opacity-75">
             <h3 className="font-semibold mb-4">Sem o B2Bot, o caos vira rotina:</h3>
             <ul className="space-y-2 text-sm text-muted-foreground list-disc pl-5">
               {sem.map((i) => <li key={i}>{i}</li>)}
             </ul>
           </div>
-          <div className="rounded-xl border bg-card p-6">
+          <div className="rounded-xl border-2 border-brand/50 bg-card p-6 shadow-lg">
             <h3 className="font-semibold mb-4 text-brand">Com o B2Bot, a eficiência vira padrão:</h3>
-            <ul className="space-y-2 text-sm text-muted-foreground list-disc pl-5">
+            <ul className="space-y-2 text-sm text-foreground list-disc pl-5">
               {com.map((i) => <li key={i}>{i}</li>)}
             </ul>
           </div>
