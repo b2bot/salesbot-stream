@@ -9,14 +9,14 @@ const Hero = () => {
         <div className="animate-enter">
           <p className="text-sm font-medium text-brand-deep">CRM com WhatsApp, Instagram e Facebook</p>
           <h1 className="mt-3 font-inter text-4xl md:text-5xl font-extrabold leading-tight bg-gradient-to-r from-brand to-brand-deep bg-clip-text text-transparent">
-            Transforme conversas em vendas no WhatsApp, Instagram e Facebook
+            Pare de perder vendas no WhatsApp. Transforme conversas em receita.
           </h1>
           <p className="mt-4 text-lg text-muted-foreground max-w-prose">
-            Dê super poderes para sua equipe, reduza o tempo de espera e pare de perder clientes por falta de resposta e organização.
+            Centralize seu atendimento, automatize o follow-up e veja sua equipe vender mais, sem o caos de planilhas e mensagens perdidas. O B2Bot é o CRM que organiza seu processo para você focar no que importa: **o cliente**.
           </p>
           <div className="mt-6 flex flex-wrap items-center gap-3">
-            <Button size="lg" variant="hero">Experimente o B2Bot gratuitamente</Button>
-            <Button size="lg" variant="outline">Ver como funciona</Button>
+            <Button size="lg" variant="hero">Iniciar teste gratuito</Button>
+            <Button size="lg" variant="outline">Agendar demonstração</Button>
           </div>
           <ul className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm text-muted-foreground">
             {[
