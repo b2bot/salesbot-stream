@@ -13,7 +13,7 @@ const Navbar = () => {
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/80 backdrop-blur">
       <div className="container mx-auto flex h-16 items-center justify-between">
-        <Link to="/" className="flex items-center gap-2">
+        <Link to="/" className="flex items-center gap-2" aria-label="Página inicial da B2Bot">
           <img
             src="/lovable-uploads/3115098d-c730-4969-a7ab-9e4498284de2.png"
             alt="Logo B2Bot"
