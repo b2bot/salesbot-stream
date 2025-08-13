@@ -5,6 +5,7 @@ import TwoColumnSection from "@/components/sections/TwoColumnSection";
 import CTASection from "@/components/sections/CTASection";
 import Comparison from "@/components/sections/Comparison";
 import TabsShowcase from "@/components/sections/TabsShowcase";
+import UseCaseTabs from "@/components/sections/UseCaseTabs";
 
 const Index = () => {
   return (
@@ -17,6 +18,7 @@ const Index = () => {
       <Hero />
       <FeaturesMatrix />
       <TabsShowcase />
+      <UseCaseTabs />
 
       <TwoColumnSection
         title="Converse, informe, e venda mais! Tudo pelo canal que o cliente já usa"
