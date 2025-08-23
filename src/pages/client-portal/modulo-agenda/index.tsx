@@ -1,99 +1,40 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
   Calendar, 
   BarChart3, 
-  Users, 
+  Settings, 
   Star, 
   DollarSign,
-  Stethoscope
+  Scissors
 } from 'lucide-react';
 import AgendaView from './agenda';
 import RelatoriosView from './relatorios';
 import NpsView from './nps';
 import FinanceiroView from './financeiro';
+import ConfiguracoesPage from './configuracoes';
+import ProcedimentosPage from './procedimentos';
 
 const ModuloAgendaIndex: React.FC = () => {
-  const [activeTab, setActiveTab] = useState('agenda');
-
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold flex items-center gap-3">
-            <Stethoscope className="h-8 w-8 text-primary" />
-            Módulo Agenda
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            Gestão completa de agendamentos médicos e centro cirúrgico
-          </p>
-        </div>
+    <div className="space-y-6 p-6">
+      <div className="space-y-2">
+        <h1 className="text-3xl font-bold">Módulo Agenda</h1>
+        <p className="text-muted-foreground">
+          Sistema completo de gestão de agendamentos para clínicas e centros médicos
+        </p>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Hoje</p>
-                <p className="text-2xl font-bold">24</p>
-                <p className="text-xs text-green-600">+12% vs ontem</p>
-              </div>
-              <Calendar className="h-8 w-8 text-blue-500" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Esta Semana</p>
-                <p className="text-2xl font-bold">156</p>
-                <p className="text-xs text-green-600">+8% vs sem. anterior</p>
-              </div>
-              <Users className="h-8 w-8 text-green-500" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">NPS Médio</p>
-                <p className="text-2xl font-bold">8.7</p>
-                <p className="text-xs text-green-600">+0.3 vs mês anterior</p>
-              </div>
-              <Star className="h-8 w-8 text-yellow-500" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Receita Mês</p>
-                <p className="text-2xl font-bold">R$ 45.2k</p>
-                <p className="text-xs text-green-600">+15% vs mês anterior</p>
-              </div>
-              <DollarSign className="h-8 w-8 text-green-600" />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Main Content */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4">
+      <Tabs defaultValue="agenda" className="space-y-4">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="agenda" className="flex items-center gap-2">
             <Calendar className="h-4 w-4" />
             Agenda
+          </TabsTrigger>
+          <TabsTrigger value="procedimentos" className="flex items-center gap-2">
+            <Scissors className="h-4 w-4" />
+            Procedimentos
           </TabsTrigger>
           <TabsTrigger value="relatorios" className="flex items-center gap-2">
             <BarChart3 className="h-4 w-4" />
@@ -107,10 +48,18 @@ const ModuloAgendaIndex: React.FC = () => {
             <DollarSign className="h-4 w-4" />
             Financeiro
           </TabsTrigger>
+          <TabsTrigger value="configuracoes" className="flex items-center gap-2">
+            <Settings className="h-4 w-4" />
+            Configurações
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="agenda" className="space-y-4">
           <AgendaView />
+        </TabsContent>
+
+        <TabsContent value="procedimentos" className="space-y-4">
+          <ProcedimentosPage />
         </TabsContent>
 
         <TabsContent value="relatorios" className="space-y-4">
@@ -123,6 +72,10 @@ const ModuloAgendaIndex: React.FC = () => {
 
         <TabsContent value="financeiro" className="space-y-4">
           <FinanceiroView />
+        </TabsContent>
+
+        <TabsContent value="configuracoes" className="space-y-4">
+          <ConfiguracoesPage />
         </TabsContent>
       </Tabs>
     </div>

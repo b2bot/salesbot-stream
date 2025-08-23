@@ -5,15 +5,30 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { CalendarDays, Filter, Plus, Clock, MapPin, User } from 'lucide-react';
+import { CalendarDays, Filter, Plus, Clock, MapPin, User, UserPlus } from 'lucide-react';
 import AgendaCalendar from '@/components/client-portal/modulo-agenda/AgendaCalendar';
 import AgendaFilters from '@/components/client-portal/modulo-agenda/AgendaFilters';
 import CheckInCheckOutButtons from '@/components/client-portal/modulo-agenda/CheckInCheckOutButtons';
+import CheckInCheckOutModal from '@/components/client-portal/modulo-agenda/CheckInCheckOutModal';
+import AgendamentoModal from '@/components/client-portal/modulo-agenda/AgendamentoModal';
+import PacienteModal from '@/components/client-portal/modulo-agenda/PacienteModal';
 
 const AgendaView: React.FC = () => {
   const [calendarView, setCalendarView] = useState<'dayGridMonth' | 'timeGridWeek' | 'timeGridDay' | 'listWeek'>('timeGridWeek');
   const [showFilters, setShowFilters] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
+  const [checkInOutModal, setCheckInOutModal] = useState<{
+    open: boolean;
+    agendamento: any;
+    action: 'checkin' | 'checkout';
+  }>({ open: false, agendamento: null, action: 'checkin' });
+  const [showAgendamentoModal, setShowAgendamentoModal] = useState(false);
+  const [showPacienteModal, setShowPacienteModal] = useState(false);
+  const [agendamentoInitialData, setAgendamentoInitialData] = useState<{
+    date?: string;
+    time?: string;
+  }>({});
+  
   const [filters, setFilters] = useState({
     professionalIds: [],
     specialtyIds: [],
@@ -35,8 +50,20 @@ const AgendaView: React.FC = () => {
   };
 
   const handleDateSelect = (selectInfo: any) => {
-    // Aqui você pode implementar a criação de novos agendamentos
-    console.log('Data selecionada:', selectInfo);
+    const startDate = selectInfo.start;
+    const date = startDate.toISOString().split('T')[0];
+    const time = startDate.toTimeString().slice(0, 5);
+    
+    setAgendamentoInitialData({ date, time });
+    setShowAgendamentoModal(true);
+  };
+
+  const handleCheckInOut = (action: 'checkin' | 'checkout', agendamento: any) => {
+    setCheckInOutModal({
+      open: true,
+      agendamento,
+      action
+    });
   };
 
   const getStatusColor = (status: string) => {
@@ -82,10 +109,27 @@ const AgendaView: React.FC = () => {
           </Tabs>
         </div>
 
-        <Button className="flex items-center gap-2">
-          <Plus className="h-4 w-4" />
-          Novo Agendamento
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button 
+            variant="outline" 
+            onClick={() => setShowPacienteModal(true)}
+            className="flex items-center gap-2"
+          >
+            <UserPlus className="h-4 w-4" />
+            Novo Paciente
+          </Button>
+          
+          <Button 
+            onClick={() => {
+              setAgendamentoInitialData({});
+              setShowAgendamentoModal(true);
+            }}
+            className="flex items-center gap-2"
+          >
+            <Plus className="h-4 w-4" />
+            Novo Agendamento
+          </Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
@@ -204,17 +248,61 @@ const AgendaView: React.FC = () => {
 
               {/* Ações */}
               <div className="border-t pt-4">
-                <CheckInCheckOutButtons
-                  appointmentId={selectedEvent.id}
-                  status={selectedEvent.status}
-                  patientName={selectedEvent.patientName}
-                  startTime={selectedEvent.start}
-                />
+                <div className="flex items-center justify-between">
+                  <CheckInCheckOutButtons
+                    appointmentId={selectedEvent.id}
+                    status={selectedEvent.status}
+                    patientName={selectedEvent.patientName}
+                    startTime={selectedEvent.start}
+                  />
+                  
+                  <div className="flex gap-2">
+                    {selectedEvent.status === 'scheduled' && (
+                      <Button
+                        size="sm"
+                        onClick={() => handleCheckInOut('checkin', selectedEvent)}
+                      >
+                        Check-in Completo
+                      </Button>
+                    )}
+                    
+                    {selectedEvent.status === 'in_progress' && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleCheckInOut('checkout', selectedEvent)}
+                      >
+                        Check-out Completo
+                      </Button>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Modals */}
+      <CheckInCheckOutModal
+        open={checkInOutModal.open}
+        onOpenChange={(open) => setCheckInOutModal(prev => ({ ...prev, open }))}
+        agendamento={checkInOutModal.agendamento}
+        action={checkInOutModal.action}
+      />
+
+      <AgendamentoModal
+        open={showAgendamentoModal}
+        onOpenChange={setShowAgendamentoModal}
+        initialDate={agendamentoInitialData.date}
+        initialTime={agendamentoInitialData.time}
+        onSuccess={() => setAgendamentoInitialData({})}
+      />
+
+      <PacienteModal
+        open={showPacienteModal}
+        onOpenChange={setShowPacienteModal}
+      />
     </div>
   );
 };
