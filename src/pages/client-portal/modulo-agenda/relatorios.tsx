@@ -34,7 +34,7 @@ const RelatoriosView: React.FC = () => {
         </div>
       </div>
 
-      {/* Filtros */}
+      {/* Filtros Completos*/}
       <Card>
         <CardHeader>
           <CardTitle>Filtros do Relatório</CardTitle>
