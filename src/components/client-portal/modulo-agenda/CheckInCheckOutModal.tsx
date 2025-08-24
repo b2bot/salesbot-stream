@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -57,8 +56,8 @@ const CheckInCheckOutModal: React.FC<CheckInCheckOutModalProps> = ({
       toast({
         title: isCheckOut ? "Check-out realizado" : "Check-in realizado",
         description: isCheckOut 
-          ? `Atendimento de ${agendamento.patientName} finalizado com sucesso.`
-          : `${agendamento.patientName} fez check-in com sucesso.`,
+          ? `Atendimento de ${agendamento?.patientName ?? "Paciente"} finalizado com sucesso.`
+          : `${agendamento?.patientName ?? "Paciente"} fez check-in com sucesso.`,
       });
       onOpenChange(false);
     },
@@ -103,7 +102,7 @@ const CheckInCheckOutModal: React.FC<CheckInCheckOutModalProps> = ({
               <div className="flex items-center gap-2">
                 <User className="h-4 w-4 text-muted-foreground" />
                 <div>
-                  <div className="font-medium">{agendamento.patientName}</div>
+                  <div className="font-medium">{agendamento?.patientName ?? "Paciente não identificado"}</div>
                   <div className="text-sm text-muted-foreground">Paciente</div>
                 </div>
               </div>
@@ -111,8 +110,8 @@ const CheckInCheckOutModal: React.FC<CheckInCheckOutModalProps> = ({
               <div className="flex items-center gap-2">
                 <User className="h-4 w-4 text-muted-foreground" />
                 <div>
-                  <div className="font-medium">{agendamento.professionalName}</div>
-                  <div className="text-sm text-muted-foreground">{agendamento.specialty}</div>
+                  <div className="font-medium">{agendamento?.professionalName ?? ""}</div>
+                  <div className="text-sm text-muted-foreground">{agendamento?.specialty ?? ""}</div>
                 </div>
               </div>
 
@@ -120,13 +119,17 @@ const CheckInCheckOutModal: React.FC<CheckInCheckOutModalProps> = ({
                 <Clock className="h-4 w-4 text-muted-foreground" />
                 <div>
                   <div className="font-medium">
-                    {new Date(agendamento.start).toLocaleTimeString('pt-BR', {
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    })}
+                    {agendamento?.start 
+                      ? new Date(agendamento.start).toLocaleTimeString('pt-BR', {
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })
+                      : "--:--"}
                   </div>
                   <div className="text-sm text-muted-foreground">
-                    {new Date(agendamento.start).toLocaleDateString('pt-BR')}
+                    {agendamento?.start
+                      ? new Date(agendamento.start).toLocaleDateString('pt-BR')
+                      : "--/--/----"}
                   </div>
                 </div>
               </div>
@@ -134,7 +137,7 @@ const CheckInCheckOutModal: React.FC<CheckInCheckOutModalProps> = ({
               <div className="flex items-center gap-2">
                 <MapPin className="h-4 w-4 text-muted-foreground" />
                 <div>
-                  <div className="font-medium">{agendamento.location}</div>
+                  <div className="font-medium">{agendamento?.location ?? ""}</div>
                   <div className="text-sm text-muted-foreground">Local</div>
                 </div>
               </div>
@@ -142,10 +145,10 @@ const CheckInCheckOutModal: React.FC<CheckInCheckOutModalProps> = ({
 
             <div className="mt-4 flex items-center gap-2">
               <Badge variant="secondary">
-                {agendamento.insurance}
+                {agendamento?.insurance ?? ""}
               </Badge>
-              <Badge variant={agendamento.status === 'scheduled' ? 'secondary' : 'default'}>
-                {agendamento.status === 'scheduled' ? 'Agendado' : 'Em Andamento'}
+              <Badge variant={agendamento?.status === 'scheduled' ? 'secondary' : 'default'}>
+                {agendamento?.status === 'scheduled' ? 'Agendado' : 'Em Andamento'}
               </Badge>
             </div>
           </CardContent>
