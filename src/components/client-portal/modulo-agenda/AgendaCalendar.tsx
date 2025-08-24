@@ -1,4 +1,3 @@
-
 import React, { useMemo } from 'react';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
@@ -37,19 +36,19 @@ const AgendaCalendar: React.FC<AgendaCalendarProps> = ({
 
     return events.map(event => ({
       id: event.id,
-      title: `${event.patientName} - ${event.professionalName}`,
+      title: `${event.patientName ?? "Paciente não identificado"} - ${event.professionalName ?? ""}`,
       start: event.start,
       end: event.end,
       backgroundColor: event.backgroundColor || getStatusColor(event.status),
       borderColor: event.borderColor || getStatusColor(event.status),
       extendedProps: {
-        patientName: event.patientName,
-        professionalName: event.professionalName,
-        specialty: event.specialty,
+        patientName: event.patientName ?? "Paciente não identificado",
+        professionalName: event.professionalName ?? "",
+        specialty: event.specialty ?? "",
         status: event.status,
         type: event.type,
-        location: event.location,
-        insurance: event.insurance,
+        location: event.location ?? "",
+        insurance: event.insurance ?? "",
       }
     }));
   }, [events]);
@@ -70,8 +69,8 @@ const AgendaCalendar: React.FC<AgendaCalendarProps> = ({
 
     return (
       <div className="p-1 text-xs">
-        <div className="font-medium truncate">{extendedProps.patientName}</div>
-        <div className="text-xs opacity-90 truncate">{extendedProps.professionalName}</div>
+        <div className="font-medium truncate">{extendedProps.patientName ?? "Paciente não identificado"}</div>
+        <div className="text-xs opacity-90 truncate">{extendedProps.professionalName ?? ""}</div>
         <Badge variant="secondary" className="text-xs mt-1">
           {getStatusLabel(extendedProps.status)}
         </Badge>
