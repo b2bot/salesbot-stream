@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   BarChart3, 
@@ -16,110 +16,70 @@ import {
   Filter,
   Reply,
   CheckCircle,
-  XCircle
+  XCircle,
+  Building2,
+  Clock,
+  Edit
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { DatePickerWithRange } from '@/components/ui/date-picker';
 import { Textarea } from '@/components/ui/textarea';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, BarChart, Bar } from 'recharts';
-
-// Mock data
-const mockMetrics = {
-  views: { value: 2847, change: 12.5 },
-  searches: { value: 1293, change: 8.3 },
-  calls: { value: 186, change: -3.2 },
-  website: { value: 324, change: 18.7 },
-  directions: { value: 427, change: 15.1 }
-};
-
-const mockChartData = [
-  { date: '01/12', views: 45, searches: 23, calls: 8, website: 12, directions: 15 },
-  { date: '02/12', views: 52, searches: 28, calls: 6, website: 15, directions: 18 },
-  { date: '03/12', views: 61, searches: 31, calls: 10, website: 18, directions: 22 },
-  { date: '04/12', views: 58, searches: 25, calls: 7, website: 14, directions: 19 },
-  { date: '05/12', views: 67, searches: 34, calls: 12, website: 21, directions: 25 },
-  { date: '06/12', views: 74, searches: 38, calls: 9, website: 19, directions: 28 },
-  { date: '07/12', views: 82, searches: 42, calls: 15, website: 24, directions: 31 }
-];
-
-const mockReviews = [
-  {
-    id: 1,
-    author: 'Maria Silva',
-    rating: 5,
-    comment: 'Excelente atendimento! Dra. Ana foi muito atenciosa e esclareceu todas as minhas dúvidas. Recomendo!',
-    date: '2024-12-07',
-    replied: false
-  },
-  {
-    id: 2,
-    author: 'João Santos',
-    rating: 4,
-    comment: 'Boa clínica, ambiente limpo e organizado. Apenas o tempo de espera foi um pouco longo.',
-    date: '2024-12-06',
-    replied: true,
-    response: 'Obrigado pelo feedback, João! Estamos trabalhando para reduzir o tempo de espera.'
-  },
-  {
-    id: 3,
-    author: 'Ana Costa',
-    rating: 5,
-    comment: 'Profissionais muito competentes e atendimento humanizado. Muito satisfeita com o resultado!',
-    date: '2024-12-05',
-    replied: false
-  }
-];
-
-const mockBusinessInfo = {
-  name: 'Clínica Saúde & Vida',
-  address: 'Rua das Flores, 123 - Centro, São Paulo - SP',
-  phone: '(11) 3456-7890',
-  website: 'https://clinicasaudevida.com.br',
-  category: 'Clínica Médica',
-  hours: {
-    'Segunda': '08:00 - 18:00',
-    'Terça': '08:00 - 18:00',
-    'Quarta': '08:00 - 18:00',
-    'Quinta': '08:00 - 18:00',
-    'Sexta': '08:00 - 17:00',
-    'Sábado': '08:00 - 12:00',
-    'Domingo': 'Fechado'
-  }
-};
-
-const mockQuestions = [
-  {
-    id: 1,
-    question: 'Vocês atendem por convênio?',
-    author: 'Cliente Anônimo',
-    date: '2024-12-06',
-    answered: false
-  },
-  {
-    id: 2,
-    question: 'Qual o horário de funcionamento no sábado?',
-    author: 'Cliente Anônimo',
-    date: '2024-12-05',
-    answered: true,
-    answer: 'Funcionamos aos sábados das 08:00 às 12:00.'
-  }
-];
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { 
+  useGoogleBusinessAuth,
+  useGoogleBusinessMetrics,
+  useGoogleBusinessReviews,
+  useGoogleBusinessInfo,
+  useGoogleBusinessQuestions
+} from '@/hooks/client-portal/modulo-agenda/useGoogleBusiness';
 
 const DashboardView: React.FC = () => {
-  const [dateRange, setDateRange] = React.useState({
+  const { metrics, chartData, loading: metricsLoading, refetch: refetchMetrics } = useGoogleBusinessMetrics();
+  const [dateRange, setDateRange] = useState({
     from: new Date(2024, 11, 1),
     to: new Date(2024, 11, 7)
   });
+
+  if (metricsLoading) {
+    return (
+      <div className="space-y-6 p-6">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+          {[1, 2, 3, 4, 5].map((i) => (
+            <Card key={i} className="animate-pulse">
+              <CardHeader className="pb-2">
+                <div className="h-4 bg-muted rounded w-3/4"></div>
+              </CardHeader>
+              <CardContent>
+                <div className="h-8 bg-muted rounded w-1/2 mb-2"></div>
+                <div className="h-3 bg-muted rounded w-full"></div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 p-6">
       {/* Filters */}
       <div className="flex gap-4 items-center">
-        <DatePickerWithRange date={dateRange} onDateChange={setDateRange} />
+        <Select defaultValue="7days">
+          <SelectTrigger className="w-48">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="7days">Últimos 7 dias</SelectItem>
+            <SelectItem value="30days">Últimos 30 dias</SelectItem>
+            <SelectItem value="90days">Últimos 90 dias</SelectItem>
+          </SelectContent>
+        </Select>
         <Select defaultValue="todas">
           <SelectTrigger className="w-48">
             <SelectValue />
@@ -134,76 +94,76 @@ const DashboardView: React.FC = () => {
 
       {/* Metrics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-        <Card>
+        <Card className="border-l-4 border-l-primary">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Visualizações</CardTitle>
-            <Eye className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-foreground">Visualizações</CardTitle>
+            <Eye className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{mockMetrics.views.value.toLocaleString()}</div>
+            <div className="text-2xl font-bold text-foreground">{metrics?.views.value.toLocaleString()}</div>
             <p className="text-xs text-muted-foreground">
-              <span className={mockMetrics.views.change > 0 ? "text-green-600" : "text-red-600"}>
-                {mockMetrics.views.change > 0 ? '+' : ''}{mockMetrics.views.change}%
+              <span className={metrics?.views.change && metrics.views.change > 0 ? "text-green-600" : "text-red-600"}>
+                {metrics?.views.change && metrics.views.change > 0 ? '+' : ''}{metrics?.views.change}%
               </span> vs período anterior
             </p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-l-4 border-l-accent">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Buscas</CardTitle>
-            <Search className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-foreground">Buscas</CardTitle>
+            <Search className="h-4 w-4 text-accent" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{mockMetrics.searches.value.toLocaleString()}</div>
+            <div className="text-2xl font-bold text-foreground">{metrics?.searches.value.toLocaleString()}</div>
             <p className="text-xs text-muted-foreground">
-              <span className={mockMetrics.searches.change > 0 ? "text-green-600" : "text-red-600"}>
-                {mockMetrics.searches.change > 0 ? '+' : ''}{mockMetrics.searches.change}%
+              <span className={metrics?.searches.change && metrics.searches.change > 0 ? "text-green-600" : "text-red-600"}>
+                {metrics?.searches.change && metrics.searches.change > 0 ? '+' : ''}{metrics?.searches.change}%
               </span> vs período anterior
             </p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-l-4 border-l-primary">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Ligações</CardTitle>
-            <Phone className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-foreground">Ligações</CardTitle>
+            <Phone className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{mockMetrics.calls.value}</div>
+            <div className="text-2xl font-bold text-foreground">{metrics?.calls.value}</div>
             <p className="text-xs text-muted-foreground">
-              <span className={mockMetrics.calls.change > 0 ? "text-green-600" : "text-red-600"}>
-                {mockMetrics.calls.change > 0 ? '+' : ''}{mockMetrics.calls.change}%
+              <span className={metrics?.calls.change && metrics.calls.change > 0 ? "text-green-600" : "text-red-600"}>
+                {metrics?.calls.change && metrics.calls.change > 0 ? '+' : ''}{metrics?.calls.change}%
               </span> vs período anterior
             </p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-l-4 border-l-accent">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Site</CardTitle>
-            <Globe className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-foreground">Site</CardTitle>
+            <Globe className="h-4 w-4 text-accent" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{mockMetrics.website.value}</div>
+            <div className="text-2xl font-bold text-foreground">{metrics?.website.value}</div>
             <p className="text-xs text-muted-foreground">
-              <span className={mockMetrics.website.change > 0 ? "text-green-600" : "text-red-600"}>
-                {mockMetrics.website.change > 0 ? '+' : ''}{mockMetrics.website.change}%
+              <span className={metrics?.website.change && metrics.website.change > 0 ? "text-green-600" : "text-red-600"}>
+                {metrics?.website.change && metrics.website.change > 0 ? '+' : ''}{metrics?.website.change}%
               </span> vs período anterior
             </p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-l-4 border-l-primary">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Rotas</CardTitle>
-            <Navigation className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-foreground">Rotas</CardTitle>
+            <Navigation className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{mockMetrics.directions.value}</div>
+            <div className="text-2xl font-bold text-foreground">{metrics?.directions.value}</div>
             <p className="text-xs text-muted-foreground">
-              <span className={mockMetrics.directions.change > 0 ? "text-green-600" : "text-red-600"}>
-                {mockMetrics.directions.change > 0 ? '+' : ''}{mockMetrics.directions.change}%
+              <span className={metrics?.directions.change && metrics.directions.change > 0 ? "text-green-600" : "text-red-600"}>
+                {metrics?.directions.change && metrics.directions.change > 0 ? '+' : ''}{metrics?.directions.change}%
               </span> vs período anterior
             </p>
           </CardContent>
@@ -214,20 +174,20 @@ const DashboardView: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle>Evolução das Métricas</CardTitle>
+            <CardTitle className="text-foreground">Evolução das Métricas</CardTitle>
             <CardDescription>Últimos 7 dias</CardDescription>
           </CardHeader>
           <CardContent>
             <ChartContainer config={{}} className="h-80">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={mockChartData}>
+                <LineChart data={chartData}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="date" />
                   <YAxis />
                   <ChartTooltip content={<ChartTooltipContent />} />
                   <Line type="monotone" dataKey="views" stroke="hsl(var(--primary))" strokeWidth={2} />
-                  <Line type="monotone" dataKey="searches" stroke="hsl(var(--secondary))" strokeWidth={2} />
-                  <Line type="monotone" dataKey="calls" stroke="hsl(var(--accent))" strokeWidth={2} />
+                  <Line type="monotone" dataKey="searches" stroke="hsl(var(--accent))" strokeWidth={2} />
+                  <Line type="monotone" dataKey="calls" stroke="hsl(var(--secondary))" strokeWidth={2} />
                 </LineChart>
               </ResponsiveContainer>
             </ChartContainer>
@@ -236,20 +196,20 @@ const DashboardView: React.FC = () => {
 
         <Card>
           <CardHeader>
-            <CardTitle>Interações por Tipo</CardTitle>
+            <CardTitle className="text-foreground">Interações por Tipo</CardTitle>
             <CardDescription>Distribuição dos últimos 7 dias</CardDescription>
           </CardHeader>
           <CardContent>
             <ChartContainer config={{}} className="h-80">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={mockChartData}>
+                <BarChart data={chartData}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="date" />
                   <YAxis />
                   <ChartTooltip content={<ChartTooltipContent />} />
                   <Bar dataKey="calls" fill="hsl(var(--primary))" />
-                  <Bar dataKey="website" fill="hsl(var(--secondary))" />
-                  <Bar dataKey="directions" fill="hsl(var(--accent))" />
+                  <Bar dataKey="website" fill="hsl(var(--accent))" />
+                  <Bar dataKey="directions" fill="hsl(var(--secondary))" />
                 </BarChart>
               </ResponsiveContainer>
             </ChartContainer>
@@ -261,8 +221,9 @@ const DashboardView: React.FC = () => {
 };
 
 const ReviewsView: React.FC = () => {
-  const [replyText, setReplyText] = React.useState('');
-  const [replyingTo, setReplyingTo] = React.useState<number | null>(null);
+  const { reviews, loading, replyToReview, refetch } = useGoogleBusinessReviews();
+  const [replyText, setReplyText] = useState('');
+  const [replyingTo, setReplyingTo] = useState<string | null>(null);
 
   const renderStars = (rating: number) => {
     return Array.from({ length: 5 }, (_, i) => (
@@ -272,6 +233,32 @@ const ReviewsView: React.FC = () => {
       />
     ));
   };
+
+  const handleReply = async (reviewId: string) => {
+    if (!replyText.trim()) return;
+    
+    await replyToReview(reviewId, replyText);
+    setReplyingTo(null);
+    setReplyText('');
+  };
+
+  if (loading) {
+    return (
+      <div className="space-y-6 p-6">
+        {[1, 2, 3].map((i) => (
+          <Card key={i} className="animate-pulse">
+            <CardHeader>
+              <div className="h-4 bg-muted rounded w-1/4 mb-2"></div>
+              <div className="h-3 bg-muted rounded w-1/2"></div>
+            </CardHeader>
+            <CardContent>
+              <div className="h-16 bg-muted rounded w-full"></div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 p-6">
@@ -303,72 +290,70 @@ const ReviewsView: React.FC = () => {
         </Select>
       </div>
 
-      {/* Reviews List */}
-      <div className="space-y-4">
-        {mockReviews.map((review) => (
-          <Card key={review.id}>
-            <CardHeader>
-              <div className="flex justify-between items-start">
-                <div>
-                  <CardTitle className="text-lg">{review.author}</CardTitle>
-                  <div className="flex items-center gap-2 mt-1">
+      {/* Reviews List - Compact Layout */}
+      <div className="space-y-3">
+        {reviews.map((review) => (
+          <Card key={review.id} className="border-l-4 border-l-primary/20">
+            <CardContent className="p-4">
+              <div className="flex justify-between items-start mb-3">
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium text-foreground">{review.author}</span>
                     <div className="flex">{renderStars(review.rating)}</div>
-                    <span className="text-sm text-muted-foreground">{review.date}</span>
-                    <Badge variant={review.replied ? "default" : "secondary"}>
-                      {review.replied ? 'Respondida' : 'Não respondida'}
-                    </Badge>
                   </div>
+                  <span className="text-sm text-muted-foreground">{review.date}</span>
+                  <Badge variant={review.replied ? "default" : "secondary"}>
+                    {review.replied ? 'Respondida' : 'Não respondida'}
+                  </Badge>
                 </div>
+                {!review.replied && (
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setReplyingTo(review.id)}
+                    className="ml-4"
+                  >
+                    <Reply className="h-4 w-4 mr-1" />
+                    Responder
+                  </Button>
+                )}
               </div>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground mb-4">{review.comment}</p>
+              
+              <p className="text-sm text-muted-foreground mb-3">{review.comment}</p>
               
               {review.replied && review.response && (
-                <div className="bg-muted p-3 rounded-lg mb-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Reply className="h-4 w-4" />
-                    <span className="font-medium text-sm">Sua resposta:</span>
+                <div className="bg-muted p-3 rounded-lg mb-3">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Reply className="h-4 w-4 text-primary" />
+                    <span className="font-medium text-sm text-primary">Sua resposta:</span>
                   </div>
                   <p className="text-sm">{review.response}</p>
                 </div>
               )}
               
-              {!review.replied && (
-                <div className="space-y-3">
-                  {replyingTo === review.id ? (
-                    <div className="space-y-3">
-                      <Textarea 
-                        placeholder="Digite sua resposta..."
-                        value={replyText}
-                        onChange={(e) => setReplyText(e.target.value)}
-                      />
-                      <div className="flex gap-2">
-                        <Button size="sm" onClick={() => setReplyingTo(null)}>
-                          Enviar Resposta
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          onClick={() => {
-                            setReplyingTo(null);
-                            setReplyText('');
-                          }}
-                        >
-                          Cancelar
-                        </Button>
-                      </div>
-                    </div>
-                  ) : (
+              {replyingTo === review.id && (
+                <div className="space-y-3 mt-3 pt-3 border-t">
+                  <Textarea 
+                    placeholder="Digite sua resposta..."
+                    value={replyText}
+                    onChange={(e) => setReplyText(e.target.value)}
+                    rows={3}
+                  />
+                  <div className="flex gap-2">
+                    <Button size="sm" onClick={() => handleReply(review.id)}>
+                      Enviar Resposta
+                    </Button>
                     <Button 
                       variant="outline" 
-                      size="sm"
-                      onClick={() => setReplyingTo(review.id)}
+                      size="sm" 
+                      onClick={() => {
+                        setReplyingTo(null);
+                        setReplyText('');
+                      }}
                     >
-                      <Reply className="h-4 w-4 mr-2" />
-                      Responder
+                      Cancelar
                     </Button>
-                  )}
+                  </div>
                 </div>
               )}
             </CardContent>
@@ -380,299 +365,544 @@ const ReviewsView: React.FC = () => {
 };
 
 const BusinessProfileView: React.FC = () => {
-  return (
-    <div className="space-y-6 p-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Informações do Perfil Comercial</CardTitle>
-          <CardDescription>Dados principais da sua empresa no Google</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-4">
-              <div>
-                <label className="text-sm font-medium">Nome da Empresa</label>
-                <p className="text-lg">{mockBusinessInfo.name}</p>
-              </div>
-              
-              <div>
-                <label className="text-sm font-medium">Endereço</label>
-                <p className="text-muted-foreground">{mockBusinessInfo.address}</p>
-              </div>
-              
-              <div>
-                <label className="text-sm font-medium">Telefone</label>
-                <p className="text-muted-foreground">{mockBusinessInfo.phone}</p>
-              </div>
-              
-              <div>
-                <label className="text-sm font-medium">Website</label>
-                <p className="text-muted-foreground">{mockBusinessInfo.website}</p>
-              </div>
-              
-              <div>
-                <label className="text-sm font-medium">Categoria</label>
-                <p className="text-muted-foreground">{mockBusinessInfo.category}</p>
-              </div>
-            </div>
-            
-            <div>
-              <label className="text-sm font-medium mb-3 block">Horário de Funcionamento</label>
-              <div className="space-y-2">
-                {Object.entries(mockBusinessInfo.hours).map(([day, hours]) => (
-                  <div key={day} className="flex justify-between">
-                    <span className="text-sm">{day}:</span>
-                    <span className="text-sm text-muted-foreground">{hours}</span>
+  const { info, loading, updateInfo } = useGoogleBusinessInfo();
+  const [isEditing, setIsEditing] = useState(false);
+  const [editForm, setEditForm] = useState({
+    name: '',
+    address: '',
+    phone: '',
+    website: '',
+    category: ''
+  });
+
+  React.useEffect(() => {
+    if (info) {
+      setEditForm({
+        name: info.name,
+        address: info.address,
+        phone: info.phone,
+        website: info.website,
+        category: info.category
+      });
+    }
+  }, [info]);
+
+  const handleSave = async () => {
+    await updateInfo(editForm);
+    setIsEditing(false);
+  };
+
+  if (loading) {
+    return (
+      <div className="space-y-6 p-6">
+        <Card className="animate-pulse">
+          <CardHeader>
+            <div className="h-6 bg-muted rounded w-1/3 mb-2"></div>
+            <div className="h-4 bg-muted rounded w-1/2"></div>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <div key={i}>
+                    <div className="h-4 bg-muted rounded w-1/4 mb-2"></div>
+                    <div className="h-6 bg-muted rounded w-3/4"></div>
                   </div>
                 ))}
               </div>
+              <div>
+                <div className="h-4 bg-muted rounded w-1/3 mb-4"></div>
+                <div className="space-y-2">
+                  {[1, 2, 3, 4, 5, 6, 7].map((i) => (
+                    <div key={i} className="flex justify-between">
+                      <div className="h-4 bg-muted rounded w-1/4"></div>
+                      <div className="h-4 bg-muted rounded w-1/3"></div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6 p-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Basic Info Card */}
+        <Card className="lg:col-span-2">
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle className="text-foreground flex items-center gap-2">
+                <Building2 className="h-5 w-5 text-primary" />
+                Informações Básicas
+              </CardTitle>
+              <CardDescription>Dados principais da sua empresa no Google</CardDescription>
+            </div>
+            <Button variant="outline" onClick={() => setIsEditing(true)}>
+              <Edit className="h-4 w-4 mr-2" />
+              Editar
+            </Button>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-foreground">Nome da Empresa</Label>
+                <p className="text-lg font-semibold text-foreground">{info?.name}</p>
+              </div>
+              
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-foreground">Categoria</Label>
+                <p className="text-muted-foreground">{info?.category}</p>
+              </div>
+              
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-foreground">Telefone</Label>
+                <div className="flex items-center gap-2">
+                  <Phone className="h-4 w-4 text-primary" />
+                  <p className="text-muted-foreground">{info?.phone}</p>
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-foreground">Website</Label>
+                <div className="flex items-center gap-2">
+                  <Globe className="h-4 w-4 text-primary" />
+                  <p className="text-muted-foreground truncate">{info?.website}</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label className="text-sm font-medium text-foreground">Endereço</Label>
+              <div className="flex items-start gap-2">
+                <MapPin className="h-4 w-4 text-primary mt-1" />
+                <p className="text-muted-foreground">{info?.address}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Hours Card */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-foreground flex items-center gap-2">
+              <Clock className="h-5 w-5 text-primary" />
+              Horário de Funcionamento
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {info && Object.entries(info.hours).map(([day, hours]) => (
+                <div key={day} className="flex justify-between items-center py-1">
+                  <span className="text-sm font-medium text-foreground">{day}</span>
+                  <span className={`text-sm ${hours === 'Fechado' ? 'text-red-600' : 'text-muted-foreground'}`}>
+                    {hours}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Edit Modal */}
+      <Dialog open={isEditing} onOpenChange={setIsEditing}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Editar Perfil Comercial</DialogTitle>
+            <DialogDescription>
+              Atualize as informações do seu perfil no Google Meu Negócio
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Nome da Empresa</Label>
+              <Input
+                id="name"
+                value={editForm.name}
+                onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="category">Categoria</Label>
+              <Input
+                id="category"
+                value={editForm.category}
+                onChange={(e) => setEditForm({ ...editForm, category: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="phone">Telefone</Label>
+              <Input
+                id="phone"
+                value={editForm.phone}
+                onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="website">Website</Label>
+              <Input
+                id="website"
+                value={editForm.website}
+                onChange={(e) => setEditForm({ ...editForm, website: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2 md:col-span-2">
+              <Label htmlFor="address">Endereço</Label>
+              <Input
+                id="address"
+                value={editForm.address}
+                onChange={(e) => setEditForm({ ...editForm, address: e.target.value })}
+              />
             </div>
           </div>
-        </CardContent>
-      </Card>
+          <div className="flex justify-end gap-2 mt-6">
+            <Button variant="outline" onClick={() => setIsEditing(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={handleSave}>
+              Salvar Alterações
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
 
 const QuestionsView: React.FC = () => {
-  const [answerText, setAnswerText] = React.useState('');
-  const [answeringTo, setAnsweringTo] = React.useState<number | null>(null);
+  const { questions, loading, answerQuestion } = useGoogleBusinessQuestions();
+  const [answerText, setAnswerText] = useState('');
+  const [answeringTo, setAnsweringTo] = useState<string | null>(null);
+
+  const handleAnswer = async (questionId: string) => {
+    if (!answerText.trim()) return;
+    
+    await answerQuestion(questionId, answerText);
+    setAnsweringTo(null);
+    setAnswerText('');
+  };
+
+  const unansweredQuestions = questions.filter(q => !q.answered);
+  const answeredQuestions = questions.filter(q => q.answered);
+
+  if (loading) {
+    return (
+      <div className="space-y-6 p-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {[1, 2].map((col) => (
+            <div key={col} className="space-y-4">
+              <div className="h-6 bg-muted rounded w-1/3"></div>
+              {[1, 2, 3].map((i) => (
+                <Card key={i} className="animate-pulse">
+                  <CardHeader>
+                    <div className="h-4 bg-muted rounded w-3/4 mb-2"></div>
+                    <div className="h-3 bg-muted rounded w-1/2"></div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="h-12 bg-muted rounded w-full"></div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 p-6">
-      <div className="space-y-4">
-        {mockQuestions.map((question) => (
-          <Card key={question.id}>
-            <CardHeader>
-              <div className="flex justify-between items-start">
-                <div>
-                  <CardTitle className="text-lg">Pergunta de {question.author}</CardTitle>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className="text-sm text-muted-foreground">{question.date}</span>
-                    <Badge variant={question.answered ? "default" : "secondary"}>
-                      {question.answered ? 'Respondida' : 'Não respondida'}
-                    </Badge>
-                  </div>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground mb-4">{question.question}</p>
-              
-              {question.answered && question.answer && (
-                <div className="bg-muted p-3 rounded-lg mb-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Reply className="h-4 w-4" />
-                    <span className="font-medium text-sm">Sua resposta:</span>
-                  </div>
-                  <p className="text-sm">{question.answer}</p>
-                </div>
-              )}
-              
-              {!question.answered && (
-                <div className="space-y-3">
-                  {answeringTo === question.id ? (
-                    <div className="space-y-3">
-                      <Textarea 
-                        placeholder="Digite sua resposta..."
-                        value={answerText}
-                        onChange={(e) => setAnswerText(e.target.value)}
-                      />
-                      <div className="flex gap-2">
-                        <Button size="sm" onClick={() => setAnsweringTo(null)}>
-                          Enviar Resposta
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          onClick={() => {
-                            setAnsweringTo(null);
-                            setAnswerText('');
-                          }}
-                        >
-                          Cancelar
-                        </Button>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Unanswered Questions */}
+        <div className="space-y-4">
+          <div className="flex items-center gap-2">
+            <h3 className="text-lg font-semibold text-foreground">Perguntas Pendentes</h3>
+            <Badge variant="secondary">{unansweredQuestions.length}</Badge>
+          </div>
+          
+          {unansweredQuestions.length === 0 ? (
+            <Card>
+              <CardContent className="p-6 text-center">
+                <MessageCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <p className="text-muted-foreground">Nenhuma pergunta pendente</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="space-y-3">
+              {unansweredQuestions.map((question) => (
+                <Card key={question.id} className="border-l-4 border-l-red-500">
+                  <CardContent className="p-4">
+                    <div className="flex justify-between items-start mb-3">
+                      <div>
+                        <p className="font-medium text-foreground mb-1">{question.question}</p>
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <span>{question.author}</span>
+                          <span>•</span>
+                          <span>{question.date}</span>
+                        </div>
                       </div>
+                      <Badge variant="outline" className="text-red-600 border-red-600">
+                        Não respondida
+                      </Badge>
                     </div>
-                  ) : (
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => setAnsweringTo(question.id)}
-                    >
-                      <Reply className="h-4 w-4 mr-2" />
-                      Responder
-                    </Button>
-                  )}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        ))}
+                    
+                    {answeringTo === question.id ? (
+                      <div className="space-y-3 pt-3 border-t">
+                        <Textarea 
+                          placeholder="Digite sua resposta..."
+                          value={answerText}
+                          onChange={(e) => setAnswerText(e.target.value)}
+                          rows={3}
+                        />
+                        <div className="flex gap-2">
+                          <Button size="sm" onClick={() => handleAnswer(question.id)}>
+                            Enviar Resposta
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            onClick={() => {
+                              setAnsweringTo(null);
+                              setAnswerText('');
+                            }}
+                          >
+                            Cancelar
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => setAnsweringTo(question.id)}
+                        className="mt-2"
+                      >
+                        <Reply className="h-4 w-4 mr-2" />
+                        Responder
+                      </Button>
+                    )}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Answered Questions */}
+        <div className="space-y-4">
+          <div className="flex items-center gap-2">
+            <h3 className="text-lg font-semibold text-foreground">Perguntas Respondidas</h3>
+            <Badge variant="default">{answeredQuestions.length}</Badge>
+          </div>
+          
+          {answeredQuestions.length === 0 ? (
+            <Card>
+              <CardContent className="p-6 text-center">
+                <CheckCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <p className="text-muted-foreground">Nenhuma pergunta respondida ainda</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="space-y-3">
+              {answeredQuestions.map((question) => (
+                <Card key={question.id} className="border-l-4 border-l-green-500">
+                  <CardContent className="p-4">
+                    <div className="flex justify-between items-start mb-3">
+                      <div>
+                        <p className="font-medium text-foreground mb-1">{question.question}</p>
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <span>{question.author}</span>
+                          <span>•</span>
+                          <span>{question.date}</span>
+                        </div>
+                      </div>
+                      <Badge variant="default" className="bg-green-600">
+                        Respondida
+                      </Badge>
+                    </div>
+                    
+                    {question.answer && (
+                      <div className="bg-muted p-3 rounded-lg mt-3">
+                        <div className="flex items-center gap-2 mb-1">
+                          <Reply className="h-4 w-4 text-primary" />
+                          <span className="font-medium text-sm text-primary">Sua resposta:</span>
+                        </div>
+                        <p className="text-sm">{question.answer}</p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
 };
 
 const ConfigurationView: React.FC = () => {
-  const [isConnected, setIsConnected] = React.useState(false);
+  const { auth, loading, connect, disconnect } = useGoogleBusinessAuth();
 
   return (
     <div className="space-y-6 p-6">
       <Card>
         <CardHeader>
-          <CardTitle>Configuração de Integração</CardTitle>
-          <CardDescription>Conecte sua conta do Google Meu Negócio</CardDescription>
+          <CardTitle className="text-foreground flex items-center gap-2">
+            <Settings className="h-5 w-5 text-primary" />
+            Configuração de Integração
+          </CardTitle>
+          <CardDescription>
+            Conecte sua conta do Google para acessar os dados do Google Meu Negócio
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="flex items-center justify-between p-4 border rounded-lg">
-            <div className="flex items-center gap-3">
-              <div className={`w-3 h-3 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`}></div>
+            <div className="flex items-center gap-4">
+              <div className={`w-3 h-3 rounded-full ${auth.connected ? 'bg-green-500' : 'bg-red-500'}`}></div>
               <div>
-                <p className="font-medium">Status da Conexão</p>
-                <p className="text-sm text-muted-foreground">
-                  {isConnected ? 'Conectado ao Google Meu Negócio' : 'Não conectado'}
+                <p className="font-medium text-foreground">
+                  Status da Conexão: {auth.connected ? 'Conectado' : 'Não conectado'}
                 </p>
+                {auth.connected && auth.email && (
+                  <p className="text-sm text-muted-foreground">
+                    Conta: {auth.email}
+                  </p>
+                )}
+                {auth.lastSync && (
+                  <p className="text-sm text-muted-foreground">
+                    Última sincronização: {new Date(auth.lastSync).toLocaleString('pt-BR')}
+                  </p>
+                )}
               </div>
             </div>
-            <Button 
-              variant={isConnected ? "outline" : "default"}
-              onClick={() => setIsConnected(!isConnected)}
-            >
-              {isConnected ? 'Desconectar' : 'Conectar com Google'}
-            </Button>
+            
+            <div className="flex gap-2">
+              {auth.connected ? (
+                <Button 
+                  variant="destructive" 
+                  onClick={disconnect}
+                  disabled={loading}
+                >
+                  {loading ? 'Desconectando...' : 'Desconectar'}
+                </Button>
+              ) : (
+                <Button 
+                  onClick={connect}
+                  disabled={loading}
+                  className="bg-primary hover:bg-primary/90"
+                >
+                  {loading ? 'Conectando...' : 'Conectar com Google'}
+                </Button>
+              )}
+            </div>
           </div>
 
-          {isConnected && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="p-4 border rounded-lg">
-                  <h4 className="font-medium mb-2">API de Desempenho</h4>
-                  <div className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-green-500" />
-                    <span className="text-sm text-muted-foreground">Ativa</span>
-                  </div>
-                </div>
-
-                <div className="p-4 border rounded-lg">
-                  <h4 className="font-medium mb-2">API de Avaliações</h4>
-                  <div className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-green-500" />
-                    <span className="text-sm text-muted-foreground">Ativa</span>
-                  </div>
-                </div>
-
-                <div className="p-4 border rounded-lg">
-                  <h4 className="font-medium mb-2">API de Informações</h4>
-                  <div className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-green-500" />
-                    <span className="text-sm text-muted-foreground">Ativa</span>
-                  </div>
-                </div>
-
-                <div className="p-4 border rounded-lg">
-                  <h4 className="font-medium mb-2">API Q&A</h4>
-                  <div className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-green-500" />
-                    <span className="text-sm text-muted-foreground">Ativa</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="p-4 bg-muted rounded-lg">
-                <h4 className="font-medium mb-2">Última Sincronização</h4>
-                <p className="text-sm text-muted-foreground">07/12/2024 às 14:30</p>
-              </div>
+          {!auth.connected && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <h4 className="font-medium text-blue-900 mb-2">Como conectar:</h4>
+              <ol className="text-sm text-blue-800 space-y-1">
+                <li>1. Clique em "Conectar com Google"</li>
+                <li>2. Faça login na sua conta Google</li>
+                <li>3. Autorize o acesso aos dados do Google Meu Negócio</li>
+                <li>4. Aguarde a confirmação da conexão</li>
+              </ol>
             </div>
           )}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <h4 className="font-medium text-foreground">Recursos Disponíveis:</h4>
+              <ul className="text-sm text-muted-foreground space-y-1">
+                <li>• Métricas de desempenho</li>
+                <li>• Gerenciamento de avaliações</li>
+                <li>• Informações do perfil comercial</li>
+                <li>• Perguntas e respostas</li>
+              </ul>
+            </div>
+            
+            <div className="space-y-2">
+              <h4 className="font-medium text-foreground">Permissões Necessárias:</h4>
+              <ul className="text-sm text-muted-foreground space-y-1">
+                <li>• Visualizar dados do perfil</li>
+                <li>• Responder avaliações</li>
+                <li>• Gerenciar informações</li>
+                <li>• Responder perguntas</li>
+              </ul>
+            </div>
+          </div>
         </CardContent>
       </Card>
     </div>
   );
 };
 
-const GoogleMeuNegocioPage: React.FC = () => {
+const GoogleMeuNegocio: React.FC = () => {
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="border-b bg-card">
-        <div className="px-6 py-4 space-y-1">
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground">Google Meu Negócio</h1>
-          <p className="text-sm text-muted-foreground">
-            Gerencie sua presença no Google, avaliações e métricas de desempenho
-          </p>
+    <div className="container mx-auto">
+      <div className="space-y-6">
+        <div className="border-b">
+          <div className="flex items-center justify-between p-6 pb-4">
+            <div>
+              <h1 className="text-2xl font-bold text-foreground">Google Meu Negócio</h1>
+              <p className="text-muted-foreground">
+                Gerencie sua presença online e acompanhe métricas do Google Business Profile
+              </p>
+            </div>
+          </div>
         </div>
-      </div>
 
-      {/* Navigation Tabs */}
-      <div className="border-b bg-card">
         <Tabs defaultValue="dashboard" className="w-full">
-          <div className="px-6">
-            <TabsList className="h-12 w-full justify-start bg-transparent p-0 border-b-0">
-              <TabsTrigger 
-                value="dashboard" 
-                className="h-12 px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground data-[state=active]:text-foreground data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none rounded-none bg-transparent"
-              >
-                <BarChart3 className="h-4 w-4 mr-2" />
-                Dashboard
-              </TabsTrigger>
-              <TabsTrigger 
-                value="avaliacoes" 
-                className="h-12 px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground data-[state=active]:text-foreground data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none rounded-none bg-transparent"
-              >
-                <Star className="h-4 w-4 mr-2" />
-                Avaliações
-              </TabsTrigger>
-              <TabsTrigger 
-                value="perfil" 
-                className="h-12 px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground data-[state=active]:text-foreground data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none rounded-none bg-transparent"
-              >
-                <MapPin className="h-4 w-4 mr-2" />
-                Perfil Comercial
-              </TabsTrigger>
-              <TabsTrigger 
-                value="perguntas" 
-                className="h-12 px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground data-[state=active]:text-foreground data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none rounded-none bg-transparent"
-              >
-                <MessageCircle className="h-4 w-4 mr-2" />
-                Perguntas & Respostas
-              </TabsTrigger>
-              <TabsTrigger 
-                value="configuracoes" 
-                className="h-12 px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground data-[state=active]:text-foreground data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none rounded-none bg-transparent"
-              >
-                <Settings className="h-4 w-4 mr-2" />
-                Configurações
-              </TabsTrigger>
-            </TabsList>
-          </div>
+          <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="dashboard" className="flex items-center gap-2">
+              <BarChart3 className="h-4 w-4" />
+              Dashboard
+            </TabsTrigger>
+            <TabsTrigger value="reviews" className="flex items-center gap-2">
+              <Star className="h-4 w-4" />
+              Avaliações
+            </TabsTrigger>
+            <TabsTrigger value="profile" className="flex items-center gap-2">
+              <Building2 className="h-4 w-4" />
+              Perfil
+            </TabsTrigger>
+            <TabsTrigger value="questions" className="flex items-center gap-2">
+              <MessageCircle className="h-4 w-4" />
+              Perguntas
+            </TabsTrigger>
+            <TabsTrigger value="config" className="flex items-center gap-2">
+              <Settings className="h-4 w-4" />
+              Configurações
+            </TabsTrigger>
+          </TabsList>
 
-          {/* Tab Content */}
-          <div className="flex-1">
-            <TabsContent value="dashboard" className="mt-0 border-0 p-0">
-              <DashboardView />
-            </TabsContent>
+          <TabsContent value="dashboard" className="mt-6">
+            <DashboardView />
+          </TabsContent>
 
-            <TabsContent value="avaliacoes" className="mt-0 border-0 p-0">
-              <ReviewsView />
-            </TabsContent>
+          <TabsContent value="reviews" className="mt-6">
+            <ReviewsView />
+          </TabsContent>
 
-            <TabsContent value="perfil" className="mt-0 border-0 p-0">
-              <BusinessProfileView />
-            </TabsContent>
+          <TabsContent value="profile" className="mt-6">
+            <BusinessProfileView />
+          </TabsContent>
 
-            <TabsContent value="perguntas" className="mt-0 border-0 p-0">
-              <QuestionsView />
-            </TabsContent>
+          <TabsContent value="questions" className="mt-6">
+            <QuestionsView />
+          </TabsContent>
 
-            <TabsContent value="configuracoes" className="mt-0 border-0 p-0">
-              <ConfigurationView />
-            </TabsContent>
-          </div>
+          <TabsContent value="config" className="mt-6">
+            <ConfigurationView />
+          </TabsContent>
         </Tabs>
       </div>
     </div>
   );
 };
 
-export default GoogleMeuNegocioPage;
+export default GoogleMeuNegocio;
