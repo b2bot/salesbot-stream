@@ -15,7 +15,7 @@ interface Agendamento {
   sala_nome: string;
   data_inicio: string;
   data_fim: string;
-  tipo: 'consulta' | 'procedimento' | 'cirurgia';
+  tipo: 'consulta' | 'procedimento' | 'cirurgia' | 'retorno';
   status: 'agendado' | 'confirmado' | 'em_andamento' | 'concluido' | 'cancelado' | 'ausente';
   observacoes?: string;
   valor?: number;

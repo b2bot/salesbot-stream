@@ -6,8 +6,14 @@ import { toast } from '@/hooks/use-toast';
 interface SalaUnidade {
   id: string;
   nome: string;
-  tipo: 'consultorio' | 'sala_procedimento' | 'centro_cirurgico' | 'enfermaria' | 'recepcao';
-  localizacao: string;
+  tipo: 'consultorio' | 'sala_procedimento' | 'centro_cirurgico' | 'enfermaria' | 'recepcao' | 'sala_exames' | 'sala_compartilhada';
+  localizacao?: string;
+  logradouro?: string;
+  numero?: string;
+  complemento?: string;
+  bairro?: string;
+  cidade?: string;
+  cep?: string;
   capacidade?: number;
   equipamentos?: string;
   status: 'ativo' | 'inativo' | 'manutencao';

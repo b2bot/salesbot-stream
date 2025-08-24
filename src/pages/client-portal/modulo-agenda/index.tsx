@@ -7,7 +7,8 @@ import {
   Settings, 
   Star, 
   DollarSign,
-  Scissors
+  Scissors,
+  MapPin
 } from 'lucide-react';
 import AgendaView from './agenda';
 import RelatoriosView from './relatorios';
@@ -15,6 +16,7 @@ import NpsView from './nps';
 import FinanceiroView from './financeiro';
 import ConfiguracoesPage from './configuracoes';
 import ProcedimentosPage from './procedimentos';
+import GoogleMeuNegocioPage from './google-meu-negocio';
 
 const ModuloAgendaIndex: React.FC = () => {
   return (
@@ -70,6 +72,13 @@ const ModuloAgendaIndex: React.FC = () => {
                 Financeiro
               </TabsTrigger>
               <TabsTrigger 
+                value="google-meu-negocio" 
+                className="h-12 px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground data-[state=active]:text-foreground data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none rounded-none bg-transparent"
+              >
+                <MapPin className="h-4 w-4 mr-2" />
+                Google Meu Negócio
+              </TabsTrigger>
+              <TabsTrigger 
                 value="configuracoes" 
                 className="h-12 px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground data-[state=active]:text-foreground data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none rounded-none bg-transparent"
               >
@@ -99,6 +108,10 @@ const ModuloAgendaIndex: React.FC = () => {
 
             <TabsContent value="financeiro" className="mt-0 border-0 p-0">
               <FinanceiroView />
+            </TabsContent>
+
+            <TabsContent value="google-meu-negocio" className="mt-0 border-0 p-0">
+              <GoogleMeuNegocioPage />
             </TabsContent>
 
             <TabsContent value="configuracoes" className="mt-0 border-0 p-0">

@@ -23,7 +23,7 @@ export const useCreateUsuario = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: (data: Omit<Usuario, 'id' | 'created_at' | 'updated_at'> & { senha: string }) =>
+    mutationFn: (data: Omit<Usuario, 'id' | 'created_at' | 'updated_at'> & { senha?: string }) =>
       fetchWithClientAuth('/api/client-portal/modulo-agenda/usuarios', {
         method: 'POST',
         body: JSON.stringify(data),
