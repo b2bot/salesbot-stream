@@ -18,9 +18,16 @@ interface SalaUnidadeModalProps {
 
 interface SalaUnidadeFormData {
   nome: string;
-  tipo: 'consultorio' | 'sala_procedimento' | 'centro_cirurgico' | 'enfermaria' | 'recepcao';
-  localizacao: string;
+  tipo: 'consultorio' | 'centro_cirurgico' | 'sala_exames' | 'sala_compartilhada';
+  logradouro: string;
+  numero: string;
+  complemento?: string;
+  bairro: string;
+  cidade: string;
+  estado: string;
+  cep: string;
   capacidade?: number;
+  o_que_e_feito: string;
   equipamentos?: string;
   status: 'ativo' | 'inativo' | 'manutencao';
   observacoes?: string;
@@ -47,8 +54,15 @@ const SalaUnidadeModal: React.FC<SalaUnidadeModalProps> = ({
     defaultValues: salaUnidade || {
       nome: '',
       tipo: 'consultorio',
-      localizacao: '',
+      logradouro: '',
+      numero: '',
+      complemento: '',
+      bairro: '',
+      cidade: '',
+      estado: '',
+      cep: '',
       capacidade: 1,
+      o_que_e_feito: '',
       equipamentos: '',
       status: 'ativo',
       observacoes: ''
@@ -62,8 +76,15 @@ const SalaUnidadeModal: React.FC<SalaUnidadeModalProps> = ({
       reset({
         nome: '',
         tipo: 'consultorio',
-        localizacao: '',
+        logradouro: '',
+        numero: '',
+        complemento: '',
+        bairro: '',
+        cidade: '',
+        estado: '',
+        cep: '',
         capacidade: 1,
+        o_que_e_feito: '',
         equipamentos: '',
         status: 'ativo',
         observacoes: ''
@@ -87,7 +108,7 @@ const SalaUnidadeModal: React.FC<SalaUnidadeModalProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {isEditing ? 'Editar Sala/Unidade' : 'Nova Sala/Unidade'}
@@ -103,7 +124,7 @@ const SalaUnidadeModal: React.FC<SalaUnidadeModalProps> = ({
                 {...register('nome', { required: 'Nome é obrigatório' })}
               />
               {errors.nome && (
-                <p className="text-sm text-destructive">{errors.nome.message}</p>
+                <p className="text-sm text-red-500">{errors.nome.message}</p>
               )}
             </div>
 
@@ -118,28 +139,103 @@ const SalaUnidadeModal: React.FC<SalaUnidadeModalProps> = ({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="consultorio">Consultório</SelectItem>
-                  <SelectItem value="sala_procedimento">Sala de Procedimento</SelectItem>
                   <SelectItem value="centro_cirurgico">Centro Cirúrgico</SelectItem>
-                  <SelectItem value="enfermaria">Enfermaria</SelectItem>
-                  <SelectItem value="recepcao">Recepção</SelectItem>
+                  <SelectItem value="sala_exames">Sala de Exames</SelectItem>
+                  <SelectItem value="sala_compartilhada">Sala Compartilhada</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="localizacao">Localização *</Label>
-              <Input
-                id="localizacao"
-                {...register('localizacao', { required: 'Localização é obrigatória' })}
-                placeholder="Ex: 1º Andar - Ala A"
-              />
-              {errors.localizacao && (
-                <p className="text-sm text-destructive">{errors.localizacao.message}</p>
-              )}
+          {/* Endereço Completo */}
+          <div className="space-y-4 border-t pt-4">
+            <h4 className="font-medium">Endereço Completo</h4>
+            
+            <div className="grid grid-cols-3 gap-4">
+              <div className="col-span-2 space-y-2">
+                <Label htmlFor="logradouro">Logradouro *</Label>
+                <Input
+                  id="logradouro"
+                  {...register('logradouro', { required: 'Logradouro é obrigatório' })}
+                  placeholder="Rua, Avenida, etc."
+                />
+                {errors.logradouro && (
+                  <p className="text-sm text-red-500">{errors.logradouro.message}</p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="numero">Número *</Label>
+                <Input
+                  id="numero"
+                  {...register('numero', { required: 'Número é obrigatório' })}
+                />
+                {errors.numero && (
+                  <p className="text-sm text-red-500">{errors.numero.message}</p>
+                )}
+              </div>
             </div>
 
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="complemento">Complemento</Label>
+                <Input
+                  id="complemento"
+                  {...register('complemento')}
+                  placeholder="Apartamento, bloco, etc."
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="bairro">Bairro *</Label>
+                <Input
+                  id="bairro"
+                  {...register('bairro', { required: 'Bairro é obrigatório' })}
+                />
+                {errors.bairro && (
+                  <p className="text-sm text-red-500">{errors.bairro.message}</p>
+                )}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="cidade">Cidade *</Label>
+                <Input
+                  id="cidade"
+                  {...register('cidade', { required: 'Cidade é obrigatória' })}
+                />
+                {errors.cidade && (
+                  <p className="text-sm text-red-500">{errors.cidade.message}</p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="estado">Estado *</Label>
+                <Input
+                  id="estado"
+                  {...register('estado', { required: 'Estado é obrigatório' })}
+                  placeholder="UF"
+                />
+                {errors.estado && (
+                  <p className="text-sm text-red-500">{errors.estado.message}</p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="cep">CEP *</Label>
+                <Input
+                  id="cep"
+                  {...register('cep', { required: 'CEP é obrigatório' })}
+                />
+                {errors.cep && (
+                  <p className="text-sm text-red-500">{errors.cep.message}</p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="capacidade">Capacidade</Label>
               <Input
@@ -148,27 +244,36 @@ const SalaUnidadeModal: React.FC<SalaUnidadeModalProps> = ({
                 min="1"
                 {...register('capacidade', { valueAsNumber: true })}
               />
-              {errors.capacidade && (
-                <p className="text-sm text-destructive">{errors.capacidade.message}</p>
-              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="status">Status</Label>
+              <Select
+                value={watch('status')}
+                onValueChange={(value: 'ativo' | 'inativo' | 'manutencao') => setValue('status', value)}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ativo">Ativo</SelectItem>
+                  <SelectItem value="inativo">Inativo</SelectItem>
+                  <SelectItem value="manutencao">Em Manutenção</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="status">Status</Label>
-            <Select
-              value={watch('status')}
-              onValueChange={(value: 'ativo' | 'inativo' | 'manutencao') => setValue('status', value)}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ativo">Ativo</SelectItem>
-                <SelectItem value="inativo">Inativo</SelectItem>
-                <SelectItem value="manutencao">Em Manutenção</SelectItem>
-              </SelectContent>
-            </Select>
+            <Label htmlFor="o_que_e_feito">O que é feito no local *</Label>
+            <Input
+              id="o_que_e_feito"
+              {...register('o_que_e_feito', { required: 'Este campo é obrigatório' })}
+              placeholder="Ex: Consultas, Procedimentos, Cirurgias"
+            />
+            {errors.o_que_e_feito && (
+              <p className="text-sm text-red-500">{errors.o_que_e_feito.message}</p>
+            )}
           </div>
 
           <div className="space-y-2">

@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,7 +7,8 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useForm } from 'react-hook-form';
 import { useCreateProfissional, useUpdateProfissional } from '@/hooks/client-portal/modulo-agenda/useProfissionais';
-import { useAgendaFilters } from '@/hooks/client-portal/modulo-agenda/useAgendaFilters';
+import { useEspecialidades } from '@/hooks/client-portal/modulo-agenda/useEspecialidades';
+import EspecialidadeModal from './EspecialidadeModal';
 
 interface ProfissionalModalProps {
   open: boolean;
@@ -27,6 +28,14 @@ interface ProfissionalFormData {
   cor_agenda: string;
 }
 
+const especialidadesPadrao = [
+  'Clínico Geral', 'Pediatra', 'Ginecologista', 'Urologista', 'Ortopedista', 
+  'Dermatologista', 'Cardiologista', 'Psiquiatra', 'Psicólogo', 'Nutricionista',
+  'Endocrinologista', 'Fisioterapeuta', 'Oftalmologista', 'Neurologista',
+  'Reumatologista', 'Otorrinolaringologista', 'Dentista', 'Radiologista',
+  'Anestesista', 'Cirurgião Geral'
+];
+
 const ProfissionalModal: React.FC<ProfissionalModalProps> = ({
   open,
   onOpenChange,
@@ -34,9 +43,10 @@ const ProfissionalModal: React.FC<ProfissionalModalProps> = ({
   onSuccess
 }) => {
   const isEditing = !!profissional;
-  const { data: filtersData } = useAgendaFilters();
+  const { data: especialidadesData, refetch: refetchEspecialidades } = useEspecialidades();
   const createProfissional = useCreateProfissional();
   const updateProfissional = useUpdateProfissional();
+  const [showEspecialidadeModal, setShowEspecialidadeModal] = useState(false);
 
   const {
     register,
@@ -89,169 +99,188 @@ const ProfissionalModal: React.FC<ProfissionalModalProps> = ({
     }
   };
 
+  const handleEspecialidadeSuccess = () => {
+    refetchEspecialidades();
+    setShowEspecialidadeModal(false);
+  };
+
   const cores = [
     '#3B82F6', '#EF4444', '#10B981', '#F59E0B', '#8B5CF6',
     '#EC4899', '#14B8A6', '#F97316', '#6366F1', '#84CC16'
   ];
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>
-            {isEditing ? 'Editar Profissional' : 'Novo Profissional'}
-          </DialogTitle>
-        </DialogHeader>
+    <>
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>
+              {isEditing ? 'Editar Profissional' : 'Novo Profissional'}
+            </DialogTitle>
+          </DialogHeader>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="nome">Nome Completo *</Label>
-              <Input
-                id="nome"
-                {...register('nome', { required: 'Nome é obrigatório' })}
-              />
-              {errors.nome && (
-                <p className="text-sm text-destructive">{errors.nome.message}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="crm">CRM *</Label>
-              <Input
-                id="crm"
-                {...register('crm', { required: 'CRM é obrigatório' })}
-              />
-              {errors.crm && (
-                <p className="text-sm text-destructive">{errors.crm.message}</p>
-              )}
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">E-mail</Label>
-              <Input
-                id="email"
-                type="email"
-                {...register('email')}
-              />
-              {errors.email && (
-                <p className="text-sm text-destructive">{errors.email.message}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="telefone">Telefone</Label>
-              <Input
-                id="telefone"
-                {...register('telefone')}
-              />
-              {errors.telefone && (
-                <p className="text-sm text-destructive">{errors.telefone.message}</p>
-              )}
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="cpf">CPF</Label>
-              <Input
-                id="cpf"
-                {...register('cpf')}
-              />
-              {errors.cpf && (
-                <p className="text-sm text-destructive">{errors.cpf.message}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="especialidade_id">Especialidade *</Label>
-              <Select
-                value={watch('especialidade_id')}
-                onValueChange={(value) => setValue('especialidade_id', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione a especialidade" />
-                </SelectTrigger>
-                <SelectContent>
-                  {filtersData?.specialties?.map((especialidade) => (
-                    <SelectItem key={especialidade.id} value={especialidade.id}>
-                      {especialidade.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {errors.especialidade_id && (
-                <p className="text-sm text-destructive">Especialidade é obrigatória</p>
-              )}
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="status">Status</Label>
-              <Select
-                value={watch('status')}
-                onValueChange={(value: 'ativo' | 'inativo') => setValue('status', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ativo">Ativo</SelectItem>
-                  <SelectItem value="inativo">Inativo</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="cor_agenda">Cor da Agenda</Label>
-              <div className="flex gap-2 items-center">
-                <input
-                  type="color"
-                  value={watch('cor_agenda')}
-                  onChange={(e) => setValue('cor_agenda', e.target.value)}
-                  className="w-8 h-8 border rounded cursor-pointer"
-                />
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="nome">Nome Completo *</Label>
                 <Input
-                  value={watch('cor_agenda')}
-                  onChange={(e) => setValue('cor_agenda', e.target.value)}
-                  className="flex-1"
+                  id="nome"
+                  {...register('nome', { required: 'Nome é obrigatório' })}
                 />
+                {errors.nome && (
+                  <p className="text-sm text-red-500">{errors.nome.message}</p>
+                )}
               </div>
-              <div className="flex gap-1 mt-2">
-                {cores.map((cor) => (
-                  <button
-                    key={cor}
-                    type="button"
-                    className="w-6 h-6 rounded border-2 border-muted hover:border-foreground"
-                    style={{ backgroundColor: cor }}
-                    onClick={() => setValue('cor_agenda', cor)}
-                  />
-                ))}
+
+              <div className="space-y-2">
+                <Label htmlFor="crm">CRM *</Label>
+                <Input
+                  id="crm"
+                  {...register('crm', { required: 'CRM é obrigatório' })}
+                />
+                {errors.crm && (
+                  <p className="text-sm text-red-500">{errors.crm.message}</p>
+                )}
               </div>
             </div>
-          </div>
 
-          <div className="flex justify-end gap-2 pt-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-            >
-              Cancelar
-            </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting 
-                ? (isEditing ? 'Salvando...' : 'Criando...') 
-                : (isEditing ? 'Salvar' : 'Criar Profissional')
-              }
-            </Button>
-          </div>
-        </form>
-      </DialogContent>
-    </Dialog>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">E-mail</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  {...register('email')}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="telefone">Telefone</Label>
+                <Input
+                  id="telefone"
+                  {...register('telefone')}
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="cpf">CPF</Label>
+                <Input
+                  id="cpf"
+                  {...register('cpf')}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="especialidade_id">Especialidade *</Label>
+                <div className="flex gap-2">
+                  <Select
+                    value={watch('especialidade_id')}
+                    onValueChange={(value) => setValue('especialidade_id', value)}
+                  >
+                    <SelectTrigger className="flex-1">
+                      <SelectValue placeholder="Selecione a especialidade" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {especialidadesPadrao.map((esp) => (
+                        <SelectItem key={esp} value={esp.toLowerCase().replace(/\s+/g, '-')}>
+                          {esp}
+                        </SelectItem>
+                      ))}
+                      {especialidadesData?.items?.map((especialidade) => (
+                        <SelectItem key={especialidade.id} value={especialidade.id}>
+                          {especialidade.nome}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowEspecialidadeModal(true)}
+                  >
+                    +
+                  </Button>
+                </div>
+                {errors.especialidade_id && (
+                  <p className="text-sm text-red-500">Especialidade é obrigatória</p>
+                )}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="status">Status</Label>
+                <Select
+                  value={watch('status')}
+                  onValueChange={(value: 'ativo' | 'inativo') => setValue('status', value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ativo">Ativo</SelectItem>
+                    <SelectItem value="inativo">Inativo</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="cor_agenda">Cor da Agenda</Label>
+                <div className="flex gap-2 items-center">
+                  <input
+                    type="color"
+                    value={watch('cor_agenda')}
+                    onChange={(e) => setValue('cor_agenda', e.target.value)}
+                    className="w-8 h-8 border rounded cursor-pointer"
+                  />
+                  <Input
+                    value={watch('cor_agenda')}
+                    onChange={(e) => setValue('cor_agenda', e.target.value)}
+                    className="flex-1"
+                  />
+                </div>
+                <div className="flex gap-1 mt-2">
+                  {cores.map((cor) => (
+                    <button
+                      key={cor}
+                      type="button"
+                      className="w-6 h-6 rounded border-2 border-muted hover:border-foreground"
+                      style={{ backgroundColor: cor }}
+                      onClick={() => setValue('cor_agenda', cor)}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+              >
+                Cancelar
+              </Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting 
+                  ? (isEditing ? 'Salvando...' : 'Criando...') 
+                  : (isEditing ? 'Salvar' : 'Criar Profissional')
+                }
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      <EspecialidadeModal
+        open={showEspecialidadeModal}
+        onOpenChange={setShowEspecialidadeModal}
+        onSuccess={handleEspecialidadeSuccess}
+      />
+    </>
   );
 };
 

@@ -30,7 +30,7 @@ interface AgendamentoFormData {
   sala_id: string;
   data_inicio: string;
   data_fim: string;
-  tipo: 'consulta' | 'procedimento' | 'cirurgia';
+  tipo: 'consulta' | 'procedimento' | 'cirurgia' | 'retorno';
   status: 'agendado' | 'confirmado' | 'em_andamento' | 'concluido' | 'cancelado' | 'ausente';
   observacoes?: string;
   valor?: number;
@@ -151,7 +151,7 @@ const AgendamentoModal: React.FC<AgendamentoModalProps> = ({
                 </SelectContent>
               </Select>
               {errors.paciente_id && (
-                <p className="text-sm text-destructive">Paciente é obrigatório</p>
+                <p className="text-sm text-red-500">Paciente é obrigatório</p>
               )}
             </div>
 
@@ -176,7 +176,7 @@ const AgendamentoModal: React.FC<AgendamentoModalProps> = ({
                 </SelectContent>
               </Select>
               {errors.profissional_id && (
-                <p className="text-sm text-destructive">Profissional é obrigatório</p>
+                <p className="text-sm text-red-500">Profissional é obrigatório</p>
               )}
             </div>
           </div>
@@ -201,7 +201,7 @@ const AgendamentoModal: React.FC<AgendamentoModalProps> = ({
                 </SelectContent>
               </Select>
               {errors.convenio_id && (
-                <p className="text-sm text-destructive">Convênio é obrigatório</p>
+                <p className="text-sm text-red-500">Convênio é obrigatório</p>
               )}
             </div>
 
@@ -220,13 +220,13 @@ const AgendamentoModal: React.FC<AgendamentoModalProps> = ({
                 <SelectContent>
                   {salasData?.items?.map((sala) => (
                     <SelectItem key={sala.id} value={sala.id}>
-                      {sala.nome} - {sala.localizacao}
+                      {sala.nome} - {sala.logradouro || sala.localizacao}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
               {errors.sala_id && (
-                <p className="text-sm text-destructive">Sala é obrigatória</p>
+                <p className="text-sm text-red-500">Sala é obrigatória</p>
               )}
             </div>
           </div>
@@ -244,7 +244,7 @@ const AgendamentoModal: React.FC<AgendamentoModalProps> = ({
                 {...register('data_inicio', { required: 'Data de início é obrigatória' })}
               />
               {errors.data_inicio && (
-                <p className="text-sm text-destructive">{errors.data_inicio.message}</p>
+                <p className="text-sm text-red-500">{errors.data_inicio.message}</p>
               )}
             </div>
 
@@ -259,7 +259,7 @@ const AgendamentoModal: React.FC<AgendamentoModalProps> = ({
                 {...register('data_fim', { required: 'Data de fim é obrigatória' })}
               />
               {errors.data_fim && (
-                <p className="text-sm text-destructive">{errors.data_fim.message}</p>
+                <p className="text-sm text-red-500">{errors.data_fim.message}</p>
               )}
             </div>
           </div>
@@ -270,13 +270,14 @@ const AgendamentoModal: React.FC<AgendamentoModalProps> = ({
               <Label htmlFor="tipo">Tipo *</Label>
               <Select
                 value={watch('tipo')}
-                onValueChange={(value: 'consulta' | 'procedimento' | 'cirurgia') => setValue('tipo', value)}
+                onValueChange={(value: 'consulta' | 'procedimento' | 'cirurgia' | 'retorno') => setValue('tipo', value)}
               >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="consulta">Consulta</SelectItem>
+                  <SelectItem value="retorno">Retorno</SelectItem>
                   <SelectItem value="procedimento">Procedimento</SelectItem>
                   <SelectItem value="cirurgia">Cirurgia</SelectItem>
                 </SelectContent>
@@ -312,9 +313,6 @@ const AgendamentoModal: React.FC<AgendamentoModalProps> = ({
                 min="0"
                 {...register('valor', { valueAsNumber: true })}
               />
-              {errors.valor && (
-                <p className="text-sm text-destructive">{errors.valor.message}</p>
-              )}
             </div>
           </div>
 

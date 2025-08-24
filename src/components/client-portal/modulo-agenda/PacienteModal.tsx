@@ -26,6 +26,7 @@ interface PacienteFormData {
   endereco: string;
   convenio_id: string;
   status: 'ativo' | 'inativo';
+  observacoes?: string;
 }
 
 const PacienteModal: React.FC<PacienteModalProps> = ({
@@ -55,7 +56,8 @@ const PacienteModal: React.FC<PacienteModalProps> = ({
       data_nascimento: '',
       endereco: '',
       convenio_id: '',
-      status: 'ativo'
+      status: 'ativo',
+      observacoes: ''
     }
   });
 
@@ -71,7 +73,8 @@ const PacienteModal: React.FC<PacienteModalProps> = ({
         data_nascimento: '',
         endereco: '',
         convenio_id: '',
-        status: 'ativo'
+        status: 'ativo',
+        observacoes: ''
       });
     }
   }, [paciente, reset]);
@@ -108,7 +111,7 @@ const PacienteModal: React.FC<PacienteModalProps> = ({
                 {...register('nome', { required: 'Nome é obrigatório' })}
               />
               {errors.nome && (
-                <p className="text-sm text-destructive">{errors.nome.message}</p>
+                <p className="text-sm text-red-500">{errors.nome.message}</p>
               )}
             </div>
 
@@ -119,7 +122,7 @@ const PacienteModal: React.FC<PacienteModalProps> = ({
                 {...register('cpf', { required: 'CPF é obrigatório' })}
               />
               {errors.cpf && (
-                <p className="text-sm text-destructive">{errors.cpf.message}</p>
+                <p className="text-sm text-red-500">{errors.cpf.message}</p>
               )}
             </div>
           </div>
@@ -132,9 +135,6 @@ const PacienteModal: React.FC<PacienteModalProps> = ({
                 type="email"
                 {...register('email')}
               />
-              {errors.email && (
-                <p className="text-sm text-destructive">{errors.email.message}</p>
-              )}
             </div>
 
             <div className="space-y-2">
@@ -144,7 +144,7 @@ const PacienteModal: React.FC<PacienteModalProps> = ({
                 {...register('telefone', { required: 'Telefone é obrigatório' })}
               />
               {errors.telefone && (
-                <p className="text-sm text-destructive">{errors.telefone.message}</p>
+                <p className="text-sm text-red-500">{errors.telefone.message}</p>
               )}
             </div>
           </div>
@@ -157,9 +157,6 @@ const PacienteModal: React.FC<PacienteModalProps> = ({
                 type="date"
                 {...register('data_nascimento')}
               />
-              {errors.data_nascimento && (
-                <p className="text-sm text-destructive">{errors.data_nascimento.message}</p>
-              )}
             </div>
 
             <div className="space-y-2">
@@ -180,7 +177,7 @@ const PacienteModal: React.FC<PacienteModalProps> = ({
                 </SelectContent>
               </Select>
               {errors.convenio_id && (
-                <p className="text-sm text-destructive">{errors.convenio_id.message}</p>
+                <p className="text-sm text-red-500">Convênio é obrigatório</p>
               )}
             </div>
           </div>
@@ -191,6 +188,16 @@ const PacienteModal: React.FC<PacienteModalProps> = ({
               id="endereco"
               {...register('endereco')}
               placeholder="Endereço completo"
+              rows={3}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="observacoes">Observações da Recepção</Label>
+            <Textarea
+              id="observacoes"
+              {...register('observacoes')}
+              placeholder="Informações adicionais para a recepção (alergias, cuidados especiais, etc.)"
               rows={3}
             />
           </div>
