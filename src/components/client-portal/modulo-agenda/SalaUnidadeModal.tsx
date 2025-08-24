@@ -101,8 +101,10 @@ const SalaUnidadeModal: React.FC<SalaUnidadeModalProps> = ({
               <Input
                 id="nome"
                 {...register('nome', { required: 'Nome é obrigatório' })}
-                error={errors.nome?.message}
               />
+              {errors.nome && (
+                <p className="text-sm text-destructive">{errors.nome.message}</p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -131,9 +133,11 @@ const SalaUnidadeModal: React.FC<SalaUnidadeModalProps> = ({
               <Input
                 id="localizacao"
                 {...register('localizacao', { required: 'Localização é obrigatória' })}
-                error={errors.localizacao?.message}
                 placeholder="Ex: 1º Andar - Ala A"
               />
+              {errors.localizacao && (
+                <p className="text-sm text-destructive">{errors.localizacao.message}</p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -143,8 +147,10 @@ const SalaUnidadeModal: React.FC<SalaUnidadeModalProps> = ({
                 type="number"
                 min="1"
                 {...register('capacidade', { valueAsNumber: true })}
-                error={errors.capacidade?.message}
               />
+              {errors.capacidade && (
+                <p className="text-sm text-destructive">{errors.capacidade.message}</p>
+              )}
             </div>
           </div>
 

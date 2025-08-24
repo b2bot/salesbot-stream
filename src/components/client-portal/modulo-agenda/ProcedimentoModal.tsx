@@ -23,18 +23,19 @@ interface ProcedimentoModalProps {
 
 interface ProcedimentoFormData {
   nome: string;
-  tipo: 'cirurgia' | 'exame' | 'procedimento_ambulatorial' | 'procedimento_hospitalar';
+  tipo: 'cirurgia' | 'exame' | 'procedimento';
   paciente_id: string;
   profissional_principal_id: string;
-  profissionais_equipe: string[];
+  equipe_ids: string[];
   sala_id: string;
   convenio_id: string;
   data_inicio: string;
   data_fim: string;
-  status: 'agendado' | 'em_preparacao' | 'em_andamento' | 'concluido' | 'cancelado';
-  materiais_necessarios?: string;
+  duracao_estimada: number;
+  materiais: string[];
+  status: 'agendado' | 'preparacao' | 'em_andamento' | 'concluido' | 'cancelado';
   observacoes?: string;
-  valor_procedimento?: number;
+  valor_estimado?: number;
 }
 
 const ProcedimentoModal: React.FC<ProcedimentoModalProps> = ({
@@ -61,49 +62,63 @@ const ProcedimentoModal: React.FC<ProcedimentoModalProps> = ({
   } = useForm<ProcedimentoFormData>({
     defaultValues: procedimento || {
       nome: '',
-      tipo: 'procedimento_ambulatorial',
+      tipo: 'procedimento',
       paciente_id: '',
       profissional_principal_id: '',
-      profissionais_equipe: [],
+      equipe_ids: [],
       sala_id: '',
       convenio_id: '',
       data_inicio: '',
       data_fim: '',
+      duracao_estimada: 60,
+      materiais: [],
       status: 'agendado',
-      materiais_necessarios: '',
       observacoes: '',
-      valor_procedimento: 0
+      valor_estimado: 0
     }
   });
 
   React.useEffect(() => {
     if (procedimento) {
-      reset(procedimento);
+      reset({
+        ...procedimento,
+        duracao_estimada: procedimento.duracao_estimada || 60,
+        materiais: procedimento.materiais || [],
+        equipe_ids: procedimento.equipe_ids || []
+      });
     } else {
       reset({
         nome: '',
-        tipo: 'procedimento_ambulatorial',
+        tipo: 'procedimento',
         paciente_id: '',
         profissional_principal_id: '',
-        profissionais_equipe: [],
+        equipe_ids: [],
         sala_id: '',
         convenio_id: '',
         data_inicio: '',
         data_fim: '',
+        duracao_estimada: 60,
+        materiais: [],
         status: 'agendado',
-        materiais_necessarios: '',
         observacoes: '',
-        valor_procedimento: 0
+        valor_estimado: 0
       });
     }
   }, [procedimento, reset]);
 
   const onSubmit = async (data: ProcedimentoFormData) => {
     try {
+      // Prepare the data in the format expected by the API
+      const submitData = {
+        ...data,
+        materiais_necessarios: data.materiais.join(', '),
+        profissionais_equipe: data.equipe_ids
+      };
+
       if (isEditing) {
-        await updateProcedimento.mutateAsync({ id: procedimento.id, ...data });
+        await updateProcedimento.mutateAsync({ id: procedimento.id, ...submitData });
       } else {
-        await createProcedimento.mutateAsync(data);
+        await createProcedimento.mutateAsync(submitData);
       }
       onOpenChange(false);
       onSuccess?.();
@@ -148,8 +163,7 @@ const ProcedimentoModal: React.FC<ProcedimentoModalProps> = ({
                 <SelectContent>
                   <SelectItem value="cirurgia">Cirurgia</SelectItem>
                   <SelectItem value="exame">Exame</SelectItem>
-                  <SelectItem value="procedimento_ambulatorial">Procedimento Ambulatorial</SelectItem>
-                  <SelectItem value="procedimento_hospitalar">Procedimento Hospitalar</SelectItem>
+                  <SelectItem value="procedimento">Procedimento</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -261,7 +275,7 @@ const ProcedimentoModal: React.FC<ProcedimentoModalProps> = ({
           </div>
 
           {/* Data e Horário */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label htmlFor="data_inicio" className="flex items-center gap-2">
                 <Clock className="h-4 w-4" />
@@ -291,6 +305,22 @@ const ProcedimentoModal: React.FC<ProcedimentoModalProps> = ({
                 <p className="text-sm text-destructive">{errors.data_fim.message}</p>
               )}
             </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="duracao_estimada">Duração (min)</Label>
+              <Input
+                id="duracao_estimada"
+                type="number"
+                min="1"
+                {...register('duracao_estimada', { 
+                  required: 'Duração é obrigatória',
+                  valueAsNumber: true 
+                })}
+              />
+              {errors.duracao_estimada && (
+                <p className="text-sm text-destructive">{errors.duracao_estimada.message}</p>
+              )}
+            </div>
           </div>
 
           {/* Status e Valor */}
@@ -306,7 +336,7 @@ const ProcedimentoModal: React.FC<ProcedimentoModalProps> = ({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="agendado">Agendado</SelectItem>
-                  <SelectItem value="em_preparacao">Em Preparação</SelectItem>
+                  <SelectItem value="preparacao">Em Preparação</SelectItem>
                   <SelectItem value="em_andamento">Em Andamento</SelectItem>
                   <SelectItem value="concluido">Concluído</SelectItem>
                   <SelectItem value="cancelado">Cancelado</SelectItem>
@@ -315,29 +345,18 @@ const ProcedimentoModal: React.FC<ProcedimentoModalProps> = ({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="valor_procedimento">Valor do Procedimento (R$)</Label>
+              <Label htmlFor="valor_estimado">Valor Estimado (R$)</Label>
               <Input
-                id="valor_procedimento"
+                id="valor_estimado"
                 type="number"
                 step="0.01"
                 min="0"
-                {...register('valor_procedimento', { valueAsNumber: true })}
+                {...register('valor_estimado', { valueAsNumber: true })}
               />
-              {errors.valor_procedimento && (
-                <p className="text-sm text-destructive">{errors.valor_procedimento.message}</p>
+              {errors.valor_estimado && (
+                <p className="text-sm text-destructive">{errors.valor_estimado.message}</p>
               )}
             </div>
-          </div>
-
-          {/* Materiais Necessários */}
-          <div className="space-y-2">
-            <Label htmlFor="materiais_necessarios">Materiais e Equipamentos Necessários</Label>
-            <Textarea
-              id="materiais_necessarios"
-              {...register('materiais_necessarios')}
-              placeholder="Liste os materiais, equipamentos e insumos necessários"
-              rows={3}
-            />
           </div>
 
           {/* Observações */}

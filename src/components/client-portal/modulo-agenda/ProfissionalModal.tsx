@@ -110,8 +110,10 @@ const ProfissionalModal: React.FC<ProfissionalModalProps> = ({
               <Input
                 id="nome"
                 {...register('nome', { required: 'Nome é obrigatório' })}
-                error={errors.nome?.message}
               />
+              {errors.nome && (
+                <p className="text-sm text-destructive">{errors.nome.message}</p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -119,8 +121,10 @@ const ProfissionalModal: React.FC<ProfissionalModalProps> = ({
               <Input
                 id="crm"
                 {...register('crm', { required: 'CRM é obrigatório' })}
-                error={errors.crm?.message}
               />
+              {errors.crm && (
+                <p className="text-sm text-destructive">{errors.crm.message}</p>
+              )}
             </div>
           </div>
 
@@ -131,8 +135,10 @@ const ProfissionalModal: React.FC<ProfissionalModalProps> = ({
                 id="email"
                 type="email"
                 {...register('email')}
-                error={errors.email?.message}
               />
+              {errors.email && (
+                <p className="text-sm text-destructive">{errors.email.message}</p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -140,8 +146,10 @@ const ProfissionalModal: React.FC<ProfissionalModalProps> = ({
               <Input
                 id="telefone"
                 {...register('telefone')}
-                error={errors.telefone?.message}
               />
+              {errors.telefone && (
+                <p className="text-sm text-destructive">{errors.telefone.message}</p>
+              )}
             </div>
           </div>
 
@@ -151,8 +159,10 @@ const ProfissionalModal: React.FC<ProfissionalModalProps> = ({
               <Input
                 id="cpf"
                 {...register('cpf')}
-                error={errors.cpf?.message}
               />
+              {errors.cpf && (
+                <p className="text-sm text-destructive">{errors.cpf.message}</p>
+              )}
             </div>
 
             <div className="space-y-2">
