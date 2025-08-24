@@ -106,8 +106,10 @@ const PacienteModal: React.FC<PacienteModalProps> = ({
               <Input
                 id="nome"
                 {...register('nome', { required: 'Nome é obrigatório' })}
-                error={errors.nome?.message}
               />
+              {errors.nome && (
+                <p className="text-sm text-destructive">{errors.nome.message}</p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -115,8 +117,10 @@ const PacienteModal: React.FC<PacienteModalProps> = ({
               <Input
                 id="cpf"
                 {...register('cpf', { required: 'CPF é obrigatório' })}
-                error={errors.cpf?.message}
               />
+              {errors.cpf && (
+                <p className="text-sm text-destructive">{errors.cpf.message}</p>
+              )}
             </div>
           </div>
 
@@ -127,8 +131,10 @@ const PacienteModal: React.FC<PacienteModalProps> = ({
                 id="email"
                 type="email"
                 {...register('email')}
-                error={errors.email?.message}
               />
+              {errors.email && (
+                <p className="text-sm text-destructive">{errors.email.message}</p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -136,8 +142,10 @@ const PacienteModal: React.FC<PacienteModalProps> = ({
               <Input
                 id="telefone"
                 {...register('telefone', { required: 'Telefone é obrigatório' })}
-                error={errors.telefone?.message}
               />
+              {errors.telefone && (
+                <p className="text-sm text-destructive">{errors.telefone.message}</p>
+              )}
             </div>
           </div>
 
@@ -148,8 +156,10 @@ const PacienteModal: React.FC<PacienteModalProps> = ({
                 id="data_nascimento"
                 type="date"
                 {...register('data_nascimento')}
-                error={errors.data_nascimento?.message}
               />
+              {errors.data_nascimento && (
+                <p className="text-sm text-destructive">{errors.data_nascimento.message}</p>
+              )}
             </div>
 
             <div className="space-y-2">

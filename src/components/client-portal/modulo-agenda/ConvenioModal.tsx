@@ -101,8 +101,10 @@ const ConvenioModal: React.FC<ConvenioModalProps> = ({
               <Input
                 id="nome"
                 {...register('nome', { required: 'Nome é obrigatório' })}
-                error={errors.nome?.message}
               />
+              {errors.nome && (
+                <p className="text-sm text-destructive">{errors.nome.message}</p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -148,8 +150,10 @@ const ConvenioModal: React.FC<ConvenioModalProps> = ({
               <Input
                 id="contato_nome"
                 {...register('contato_nome')}
-                error={errors.contato_nome?.message}
               />
+              {errors.contato_nome && (
+                <p className="text-sm text-destructive">{errors.contato_nome.message}</p>
+              )}
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -158,8 +162,10 @@ const ConvenioModal: React.FC<ConvenioModalProps> = ({
                 <Input
                   id="contato_telefone"
                   {...register('contato_telefone')}
-                  error={errors.contato_telefone?.message}
                 />
+                {errors.contato_telefone && (
+                  <p className="text-sm text-destructive">{errors.contato_telefone.message}</p>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -168,8 +174,10 @@ const ConvenioModal: React.FC<ConvenioModalProps> = ({
                   id="contato_email"
                   type="email"
                   {...register('contato_email')}
-                  error={errors.contato_email?.message}
                 />
+                {errors.contato_email && (
+                  <p className="text-sm text-destructive">{errors.contato_email.message}</p>
+                )}
               </div>
             </div>
           </div>

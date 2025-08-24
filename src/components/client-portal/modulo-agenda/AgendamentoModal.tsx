@@ -242,8 +242,10 @@ const AgendamentoModal: React.FC<AgendamentoModalProps> = ({
                 id="data_inicio"
                 type="datetime-local"
                 {...register('data_inicio', { required: 'Data de início é obrigatória' })}
-                error={errors.data_inicio?.message}
               />
+              {errors.data_inicio && (
+                <p className="text-sm text-destructive">{errors.data_inicio.message}</p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -255,8 +257,10 @@ const AgendamentoModal: React.FC<AgendamentoModalProps> = ({
                 id="data_fim"
                 type="datetime-local"
                 {...register('data_fim', { required: 'Data de fim é obrigatória' })}
-                error={errors.data_fim?.message}
               />
+              {errors.data_fim && (
+                <p className="text-sm text-destructive">{errors.data_fim.message}</p>
+              )}
             </div>
           </div>
 
@@ -307,8 +311,10 @@ const AgendamentoModal: React.FC<AgendamentoModalProps> = ({
                 step="0.01"
                 min="0"
                 {...register('valor', { valueAsNumber: true })}
-                error={errors.valor?.message}
               />
+              {errors.valor && (
+                <p className="text-sm text-destructive">{errors.valor.message}</p>
+              )}
             </div>
           </div>
 

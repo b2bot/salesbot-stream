@@ -6,14 +6,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
 import { useForm } from 'react-hook-form';
 import { useCreateProcedimento, useUpdateProcedimento } from '@/hooks/client-portal/modulo-agenda/useProcedimentos';
 import { usePacientes } from '@/hooks/client-portal/modulo-agenda/usePacientes';
 import { useProfissionais } from '@/hooks/client-portal/modulo-agenda/useProfissionais';
-import { useConvenios } from '@/hooks/client-portal/modulo-agenda/useConvenios';
 import { useSalasUnidades } from '@/hooks/client-portal/modulo-agenda/useSalasUnidades';
-import { X, Plus, User, Calendar, Clock, MapPin } from 'lucide-react';
+import { useConvenios } from '@/hooks/client-portal/modulo-agenda/useConvenios';
+import { Scissors, User, MapPin, Clock } from 'lucide-react';
 
 interface ProcedimentoModalProps {
   open: boolean;
@@ -24,19 +23,18 @@ interface ProcedimentoModalProps {
 
 interface ProcedimentoFormData {
   nome: string;
-  tipo: 'cirurgia' | 'procedimento' | 'exame';
+  tipo: 'cirurgia' | 'exame' | 'procedimento_ambulatorial' | 'procedimento_hospitalar';
   paciente_id: string;
   profissional_principal_id: string;
-  equipe_ids: string[];
+  profissionais_equipe: string[];
   sala_id: string;
   convenio_id: string;
   data_inicio: string;
   data_fim: string;
-  duracao_estimada: number;
-  materiais: string[];
-  status: 'agendado' | 'preparacao' | 'em_andamento' | 'concluido' | 'cancelado';
+  status: 'agendado' | 'em_preparacao' | 'em_andamento' | 'concluido' | 'cancelado';
+  materiais_necessarios?: string;
   observacoes?: string;
-  valor_estimado?: number;
+  valor_procedimento?: number;
 }
 
 const ProcedimentoModal: React.FC<ProcedimentoModalProps> = ({
@@ -46,12 +44,10 @@ const ProcedimentoModal: React.FC<ProcedimentoModalProps> = ({
   onSuccess
 }) => {
   const isEditing = !!procedimento;
-  const [materialInput, setMaterialInput] = React.useState('');
-  
   const { data: pacientesData } = usePacientes();
   const { data: profissionaisData } = useProfissionais();
-  const { data: conveniosData } = useConvenios();
   const { data: salasData } = useSalasUnidades();
+  const { data: conveniosData } = useConvenios();
   const createProcedimento = useCreateProcedimento();
   const updateProcedimento = useUpdateProcedimento();
 
@@ -65,19 +61,18 @@ const ProcedimentoModal: React.FC<ProcedimentoModalProps> = ({
   } = useForm<ProcedimentoFormData>({
     defaultValues: procedimento || {
       nome: '',
-      tipo: 'procedimento',
+      tipo: 'procedimento_ambulatorial',
       paciente_id: '',
       profissional_principal_id: '',
-      equipe_ids: [],
+      profissionais_equipe: [],
       sala_id: '',
       convenio_id: '',
       data_inicio: '',
       data_fim: '',
-      duracao_estimada: 60,
-      materiais: [],
       status: 'agendado',
+      materiais_necessarios: '',
       observacoes: '',
-      valor_estimado: 0
+      valor_procedimento: 0
     }
   });
 
@@ -85,24 +80,20 @@ const ProcedimentoModal: React.FC<ProcedimentoModalProps> = ({
     if (procedimento) {
       reset(procedimento);
     } else {
-      const now = new Date();
-      const endTime = new Date(now.getTime() + 60 * 60000); // +1 hour
-      
       reset({
         nome: '',
-        tipo: 'procedimento',
+        tipo: 'procedimento_ambulatorial',
         paciente_id: '',
         profissional_principal_id: '',
-        equipe_ids: [],
+        profissionais_equipe: [],
         sala_id: '',
         convenio_id: '',
-        data_inicio: now.toISOString().slice(0, 16),
-        data_fim: endTime.toISOString().slice(0, 16),
-        duracao_estimada: 60,
-        materiais: [],
+        data_inicio: '',
+        data_fim: '',
         status: 'agendado',
+        materiais_necessarios: '',
         observacoes: '',
-        valor_estimado: 0
+        valor_procedimento: 0
       });
     }
   }, [procedimento, reset]);
@@ -121,71 +112,44 @@ const ProcedimentoModal: React.FC<ProcedimentoModalProps> = ({
     }
   };
 
-  const addMaterial = () => {
-    if (materialInput.trim()) {
-      const currentMaterials = watch('materiais') || [];
-      setValue('materiais', [...currentMaterials, materialInput.trim()]);
-      setMaterialInput('');
-    }
-  };
-
-  const removeMaterial = (index: number) => {
-    const currentMaterials = watch('materiais') || [];
-    setValue('materiais', currentMaterials.filter((_, i) => i !== index));
-  };
-
-  const addEquipeMember = (profissionalId: string) => {
-    const currentEquipe = watch('equipe_ids') || [];
-    if (!currentEquipe.includes(profissionalId)) {
-      setValue('equipe_ids', [...currentEquipe, profissionalId]);
-    }
-  };
-
-  const removeEquipeMember = (profissionalId: string) => {
-    const currentEquipe = watch('equipe_ids') || [];
-    setValue('equipe_ids', currentEquipe.filter(id => id !== profissionalId));
-  };
-
-  const availableProfissionais = profissionaisData?.items?.filter(prof => 
-    prof.id !== watch('profissional_principal_id') && 
-    !watch('equipe_ids')?.includes(prof.id)
-  );
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Calendar className="h-5 w-5" />
+            <Scissors className="h-5 w-5" />
             {isEditing ? 'Editar Procedimento' : 'Novo Procedimento'}
           </DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          {/* Informações Básicas */}
+          {/* Nome e Tipo */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="nome">Nome do Procedimento *</Label>
               <Input
                 id="nome"
                 {...register('nome', { required: 'Nome é obrigatório' })}
-                error={errors.nome?.message}
               />
+              {errors.nome && (
+                <p className="text-sm text-destructive">{errors.nome.message}</p>
+              )}
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="tipo">Tipo *</Label>
               <Select
                 value={watch('tipo')}
-                onValueChange={(value: 'cirurgia' | 'procedimento' | 'exame') => setValue('tipo', value)}
+                onValueChange={(value: any) => setValue('tipo', value)}
               >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="cirurgia">Cirurgia</SelectItem>
-                  <SelectItem value="procedimento">Procedimento</SelectItem>
                   <SelectItem value="exame">Exame</SelectItem>
+                  <SelectItem value="procedimento_ambulatorial">Procedimento Ambulatorial</SelectItem>
+                  <SelectItem value="procedimento_hospitalar">Procedimento Hospitalar</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -213,12 +177,15 @@ const ProcedimentoModal: React.FC<ProcedimentoModalProps> = ({
                   ))}
                 </SelectContent>
               </Select>
+              {errors.paciente_id && (
+                <p className="text-sm text-destructive">Paciente é obrigatório</p>
+              )}
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="profissional_principal_id" className="flex items-center gap-2">
                 <User className="h-4 w-4" />
-                Profissional Principal *
+                Profissional Responsável *
               </Label>
               <Select
                 value={watch('profissional_principal_id')}
@@ -235,44 +202,41 @@ const ProcedimentoModal: React.FC<ProcedimentoModalProps> = ({
                   ))}
                 </SelectContent>
               </Select>
+              {errors.profissional_principal_id && (
+                <p className="text-sm text-destructive">Profissional é obrigatório</p>
+              )}
             </div>
           </div>
 
-          {/* Equipe Adicional */}
-          <div className="space-y-2">
-            <Label>Equipe Adicional</Label>
-            <div className="flex gap-2">
-              <Select onValueChange={addEquipeMember}>
-                <SelectTrigger className="flex-1">
-                  <SelectValue placeholder="Adicionar membro da equipe" />
+          {/* Sala e Convênio */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="sala_id" className="flex items-center gap-2">
+                <MapPin className="h-4 w-4" />
+                Sala/Local *
+              </Label>
+              <Select
+                value={watch('sala_id')}
+                onValueChange={(value) => setValue('sala_id', value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione a sala" />
                 </SelectTrigger>
                 <SelectContent>
-                  {availableProfissionais?.map((profissional) => (
-                    <SelectItem key={profissional.id} value={profissional.id}>
-                      {profissional.nome} - {profissional.especialidade_nome}
+                  {salasData?.items?.filter(sala => 
+                    sala.tipo === 'centro_cirurgico' || sala.tipo === 'sala_procedimento'
+                  ).map((sala) => (
+                    <SelectItem key={sala.id} value={sala.id}>
+                      {sala.nome} - {sala.localizacao}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
+              {errors.sala_id && (
+                <p className="text-sm text-destructive">Sala é obrigatória</p>
+              )}
             </div>
-            <div className="flex flex-wrap gap-2 mt-2">
-              {watch('equipe_ids')?.map((profId) => {
-                const prof = profissionaisData?.items?.find(p => p.id === profId);
-                return prof ? (
-                  <Badge key={profId} variant="secondary" className="flex items-center gap-1">
-                    {prof.nome}
-                    <X 
-                      className="h-3 w-3 cursor-pointer" 
-                      onClick={() => removeEquipeMember(profId)}
-                    />
-                  </Badge>
-                ) : null;
-              })}
-            </div>
-          </div>
 
-          {/* Convênio e Sala */}
-          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="convenio_id">Convênio *</Label>
               <Select
@@ -290,33 +254,14 @@ const ProcedimentoModal: React.FC<ProcedimentoModalProps> = ({
                   ))}
                 </SelectContent>
               </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="sala_id" className="flex items-center gap-2">
-                <MapPin className="h-4 w-4" />
-                Sala/Local *
-              </Label>
-              <Select
-                value={watch('sala_id')}
-                onValueChange={(value) => setValue('sala_id', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione a sala" />
-                </SelectTrigger>
-                <SelectContent>
-                  {salasData?.items?.map((sala) => (
-                    <SelectItem key={sala.id} value={sala.id}>
-                      {sala.nome} - {sala.localizacao}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              {errors.convenio_id && (
+                <p className="text-sm text-destructive">Convênio é obrigatório</p>
+              )}
             </div>
           </div>
 
-          {/* Data, Hora e Duração */}
-          <div className="grid grid-cols-3 gap-4">
+          {/* Data e Horário */}
+          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="data_inicio" className="flex items-center gap-2">
                 <Clock className="h-4 w-4" />
@@ -326,8 +271,10 @@ const ProcedimentoModal: React.FC<ProcedimentoModalProps> = ({
                 id="data_inicio"
                 type="datetime-local"
                 {...register('data_inicio', { required: 'Data de início é obrigatória' })}
-                error={errors.data_inicio?.message}
               />
+              {errors.data_inicio && (
+                <p className="text-sm text-destructive">{errors.data_inicio.message}</p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -339,47 +286,10 @@ const ProcedimentoModal: React.FC<ProcedimentoModalProps> = ({
                 id="data_fim"
                 type="datetime-local"
                 {...register('data_fim', { required: 'Data de fim é obrigatória' })}
-                error={errors.data_fim?.message}
               />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="duracao_estimada">Duração (minutos)</Label>
-              <Input
-                id="duracao_estimada"
-                type="number"
-                min="15"
-                step="15"
-                {...register('duracao_estimada', { valueAsNumber: true })}
-                error={errors.duracao_estimada?.message}
-              />
-            </div>
-          </div>
-
-          {/* Materiais */}
-          <div className="space-y-2">
-            <Label>Materiais Necessários</Label>
-            <div className="flex gap-2">
-              <Input
-                value={materialInput}
-                onChange={(e) => setMaterialInput(e.target.value)}
-                placeholder="Digite o material e pressione Enter"
-                onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addMaterial())}
-              />
-              <Button type="button" onClick={addMaterial}>
-                <Plus className="h-4 w-4" />
-              </Button>
-            </div>
-            <div className="flex flex-wrap gap-2 mt-2">
-              {watch('materiais')?.map((material, index) => (
-                <Badge key={index} variant="outline" className="flex items-center gap-1">
-                  {material}
-                  <X 
-                    className="h-3 w-3 cursor-pointer" 
-                    onClick={() => removeMaterial(index)}
-                  />
-                </Badge>
-              ))}
+              {errors.data_fim && (
+                <p className="text-sm text-destructive">{errors.data_fim.message}</p>
+              )}
             </div>
           </div>
 
@@ -396,7 +306,7 @@ const ProcedimentoModal: React.FC<ProcedimentoModalProps> = ({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="agendado">Agendado</SelectItem>
-                  <SelectItem value="preparacao">Preparação</SelectItem>
+                  <SelectItem value="em_preparacao">Em Preparação</SelectItem>
                   <SelectItem value="em_andamento">Em Andamento</SelectItem>
                   <SelectItem value="concluido">Concluído</SelectItem>
                   <SelectItem value="cancelado">Cancelado</SelectItem>
@@ -405,16 +315,29 @@ const ProcedimentoModal: React.FC<ProcedimentoModalProps> = ({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="valor_estimado">Valor Estimado (R$)</Label>
+              <Label htmlFor="valor_procedimento">Valor do Procedimento (R$)</Label>
               <Input
-                id="valor_estimado"
+                id="valor_procedimento"
                 type="number"
                 step="0.01"
                 min="0"
-                {...register('valor_estimado', { valueAsNumber: true })}
-                error={errors.valor_estimado?.message}
+                {...register('valor_procedimento', { valueAsNumber: true })}
               />
+              {errors.valor_procedimento && (
+                <p className="text-sm text-destructive">{errors.valor_procedimento.message}</p>
+              )}
             </div>
+          </div>
+
+          {/* Materiais Necessários */}
+          <div className="space-y-2">
+            <Label htmlFor="materiais_necessarios">Materiais e Equipamentos Necessários</Label>
+            <Textarea
+              id="materiais_necessarios"
+              {...register('materiais_necessarios')}
+              placeholder="Liste os materiais, equipamentos e insumos necessários"
+              rows={3}
+            />
           </div>
 
           {/* Observações */}
@@ -423,8 +346,8 @@ const ProcedimentoModal: React.FC<ProcedimentoModalProps> = ({
             <Textarea
               id="observacoes"
               {...register('observacoes')}
-              placeholder="Observações sobre o procedimento, preparativos, cuidados especiais, etc."
-              rows={4}
+              placeholder="Observações sobre o procedimento"
+              rows={3}
             />
           </div>
 
@@ -438,8 +361,8 @@ const ProcedimentoModal: React.FC<ProcedimentoModalProps> = ({
             </Button>
             <Button type="submit" disabled={isSubmitting}>
               {isSubmitting 
-                ? (isEditing ? 'Salvando...' : 'Agendando...') 
-                : (isEditing ? 'Salvar' : 'Agendar Procedimento')
+                ? (isEditing ? 'Salvando...' : 'Criando...') 
+                : (isEditing ? 'Salvar' : 'Criar Procedimento')
               }
             </Button>
           </div>
