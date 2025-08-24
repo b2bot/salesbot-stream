@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -16,7 +15,7 @@ import { toast } from '@/hooks/use-toast';
 interface CheckInCheckOutButtonsProps {
   appointmentId: string;
   status: 'scheduled' | 'in_progress' | 'completed' | 'cancelled';
-  patientName: string;
+  patientName?: string | null;
   startTime: string;
   className?: string;
 }
@@ -30,6 +29,8 @@ const CheckInCheckOutButtons: React.FC<CheckInCheckOutButtonsProps> = ({
 }) => {
   const queryClient = useQueryClient();
 
+  const safeName = patientName ?? "Paciente";
+
   const checkInMutation = useMutation({
     mutationFn: () => 
       fetchWithClientAuth(`/api/client-portal/modulo-agenda/check-in`, {
@@ -40,7 +41,7 @@ const CheckInCheckOutButtons: React.FC<CheckInCheckOutButtonsProps> = ({
       queryClient.invalidateQueries({ queryKey: ['agenda-events'] });
       toast({
         title: "Check-in realizado",
-        description: `${patientName} fez check-in com sucesso.`,
+        description: `${safeName} fez check-in com sucesso.`,
       });
     },
     onError: (error: Error) => {
@@ -62,7 +63,7 @@ const CheckInCheckOutButtons: React.FC<CheckInCheckOutButtonsProps> = ({
       queryClient.invalidateQueries({ queryKey: ['agenda-events'] });
       toast({
         title: "Check-out realizado",
-        description: `Atendimento de ${patientName} finalizado com sucesso.`,
+        description: `Atendimento de ${safeName} finalizado com sucesso.`,
       });
     },
     onError: (error: Error) => {
