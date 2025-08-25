@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,7 +12,7 @@ import { useAgendaNps, useCreateNps } from '@/hooks/client-portal/modulo-agenda/
 import { format, subDays } from 'date-fns';
 
 const NpsView: React.FC = () => {
-  const [selectedProfessional, setSelectedProfessional] = useState<string>('');
+  const [selectedProfessional, setSelectedProfessional] = useState<string>('all');
   const [newNpsScore, setNewNpsScore] = useState(0);
   const [newNpsComment, setNewNpsComment] = useState('');
   const [selectedAppointment, setSelectedAppointment] = useState('');
@@ -22,7 +21,7 @@ const NpsView: React.FC = () => {
   const { data: npsData, isLoading } = useAgendaNps({
     startDate: format(subDays(new Date(), 30), 'yyyy-MM-dd'),
     endDate: format(new Date(), 'yyyy-MM-dd'),
-    professionalId: selectedProfessional || undefined,
+    professionalId: selectedProfessional === 'all' ? undefined : selectedProfessional,
   });
 
   const createNpsMutation = useCreateNps();
@@ -167,7 +166,7 @@ const NpsView: React.FC = () => {
                   <SelectValue placeholder="Todos os profissionais" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Todos os profissionais</SelectItem>
+                  <SelectItem value="all">Todos os profissionais</SelectItem>
                   <SelectItem value="dr-carlos">Dr. Carlos (Cardiologia)</SelectItem>
                   <SelectItem value="dra-ana">Dra. Ana (Dermatologia)</SelectItem>
                   <SelectItem value="dr-jose">Dr. José (Ortopedia)</SelectItem>

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -40,8 +39,8 @@ import { toast } from '@/hooks/use-toast';
 
 const ProcedimentosPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
-  const [tipoFilter, setTipoFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [tipoFilter, setTipoFilter] = useState('all');
   const [selectedProcedimento, setSelectedProcedimento] = useState<any>(null);
   const [showProcedimentoModal, setShowProcedimentoModal] = useState(false);
   const [deleteDialog, setDeleteDialog] = useState<{
@@ -50,8 +49,8 @@ const ProcedimentosPage: React.FC = () => {
   }>({ open: false, procedimento: null });
 
   const { data: procedimentosData, isLoading } = useProcedimentos({
-    status: statusFilter || undefined,
-    tipo: tipoFilter || undefined,
+    status: statusFilter === 'all' ? undefined : statusFilter,
+    tipo: tipoFilter === 'all' ? undefined : tipoFilter,
   });
 
   const deleteProcedimento = useDeleteProcedimento();
@@ -159,7 +158,7 @@ const ProcedimentosPage: React.FC = () => {
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todos</SelectItem>
+                <SelectItem value="all">Todos</SelectItem>
                 <SelectItem value="agendado">Agendado</SelectItem>
                 <SelectItem value="preparacao">Preparação</SelectItem>
                 <SelectItem value="em_andamento">Em Andamento</SelectItem>
@@ -173,7 +172,7 @@ const ProcedimentosPage: React.FC = () => {
                 <SelectValue placeholder="Tipo" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todos</SelectItem>
+                <SelectItem value="all">Todos</SelectItem>
                 <SelectItem value="cirurgia">Cirurgia</SelectItem>
                 <SelectItem value="procedimento">Procedimento</SelectItem>
                 <SelectItem value="exame">Exame</SelectItem>
